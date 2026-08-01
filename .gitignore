@@ -7,7 +7,12 @@ engine/.venv/
 dist/
 dist-electron/
 release/
-build/
+
+# NOTE: build/ is deliberately NOT ignored. It holds the icon set that
+# electron-builder needs — icon.ico (Windows), icon.png (macOS) and
+# icons/ (Linux). They are generated from build/icon.svg by
+# `npm run build:icon`, but committing them means a fresh clone can build
+# an installer without a working headless Chromium. 1.2 MB total.
 
 # python
 __pycache__/

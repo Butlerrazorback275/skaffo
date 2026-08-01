@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!--
+    Skaffo app icon.
+
+    Same mark as the in-app logo (Topbar.tsx): a hammer on the indigo→violet
+    gradient. Redrawn at icon scale rather than scaled up from the 16px
+    Lucide glyph, because a 1.5px-stroke line icon turns to mush at 512px and
+    disappears at 16px.
+
+    Decisions:
+      * Squircle, not a circle — matches how Windows 11 and macOS present
+        app tiles, and keeps more usable area than a circle.
+      * Solid hammer, not a stroked one. At 16px in the taskbar a stroke
+        outline collapses; a filled silhouette stays readable.
+      * The gradient runs top-left to bottom-right, matching
+        `bg-gradient-to-br from-primary to-hover` in the app.
+      * A subtle inner top highlight mirrors the app's `.card-sheen`.
+  -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#6366F1"/>
+      <stop offset="55%"  stop-color="#6D5AEF"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="0.28"/>
+      <stop offset="45%"  stop-color="#FFFFFF" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+
+    <linearGradient id="steel" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0%"   stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E4E7FB"/>
+    </linearGradient>
+
+    <linearGradient id="handle" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="0.97"/>
+      <stop offset="100%" stop-color="#D8DCF7" stop-opacity="0.95"/>
+    </linearGradient>
+
+    <filter id="drop" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="14" stdDeviation="22"
+                    flood-color="#1E1B4B" flood-opacity="0.34"/>
+    </filter>
+  </defs>
+
+  <!-- squircle plate -->
+  <path fill="url(#bg)" d="
+    M512 40
+    C 236 40, 40 236, 40 512
+    S 236 984, 512 984
+    S 984 788, 984 512
+    S 788 40, 512 40 Z"/>
+
+  <!-- top highlight -->
+  <path fill="url(#sheen)" d="
+    M512 40
+    C 236 40, 40 236, 40 512
+    c 0 44, 6 86, 17 127
+    C 132 460, 300 366, 512 366
+    s 380 94, 455 273
+    c 11 -41, 17 -83, 17 -127
+    C 984 236, 788 40, 512 40 Z"/>
+
+  <!-- ── hammer ──────────────────────────────────────────
+       Drawn as one solid silhouette so it survives 16px.
+       The head is deliberately chunky and the claw deeply forked: at small
+       sizes a slim rounded head reads as a paint roller, not a hammer. -->
+  <g filter="url(#drop)" transform="translate(512 512) rotate(-36) scale(1.1) translate(-512 -512)">
+
+    <!-- handle -->
+    <rect x="482" y="486" width="60" height="318" rx="30" fill="url(#handle)"/>
+
+    <!-- grip band -->
+    <rect x="482" y="676" width="60" height="104" rx="28" fill="#C3C8EE" opacity="0.6"/>
+
+    <!-- neck: flares from the handle into the head so they read as one object -->
+    <path fill="url(#steel)" d="M 470 448 h 84 l 16 66 h -116 Z"/>
+
+    <!-- Head, drawn as one path, left to right:
+         claw prongs → waist → square striking face.
+         Kept to straight lines and one small radius so the silhouette is
+         unambiguous at 16px; curved arcs here read as a paint roller. -->
+    <path fill="url(#steel)" d="
+      M 262 300
+      L 400 300
+      L 400 358
+      L 336 372
+      L 400 386
+      L 400 444
+      L 262 444
+      L 262 300 Z
+      M 400 300
+      L 690 300
+      A 42 42 0 0 1 732 342
+      L 732 402
+      A 42 42 0 0 1 690 444
+      L 400 444
+      L 400 300 Z"/>
+
+    <!-- V-shaped nail slot cut out of the claw -->
+    <path fill="url(#bg)" d="
+      M 246 344
+      L 330 366
+      L 330 378
+      L 246 400
+      Z"/>
+  </g>
+</svg>
