@@ -1,0 +1,19 @@
+// Types mirrored from your Skaffo schema.
+
+<% for e in entities %>
+export interface @@ e.pascal @@ {
+<% for c in e.columns %>
+  @@ c.name @@<% if c.optional %>?<% endif %>: @@ c.ts @@;
+<% endfor %>
+}
+
+export type @@ e.pascal @@Create = Omit<@@ e.pascal @@, '@@ e.pk.name if e.pk else "id" @@'>;
+
+<% endfor %>
+export interface Page<T> {
+  items: T[];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+}

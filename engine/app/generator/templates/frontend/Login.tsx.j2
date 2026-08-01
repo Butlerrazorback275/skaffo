@@ -1,0 +1,70 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { api } from '../lib/api';
+import { useAuth } from '../store/auth';
+
+export default function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const setToken = useAuth((s) => s.setToken);
+  const navigate = useNavigate();
+
+  const submit = async (ev: React.FormEvent) => {
+    ev.preventDefault();
+    setBusy(true);
+    setError(null);
+    try {
+      const res = mode === 'login'
+        ? await api.auth.login(email, password)
+        : await api.auth.register(email, password);
+      setToken(res.access_token);
+      navigate('/');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="grid min-h-screen place-items-center px-4">
+      <form onSubmit={submit} className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-7">
+        <h1 className="text-xl font-semibold">@@ name @@</h1>
+        <p className="mt-1 text-sm text-slate-500">
+          {mode === 'login' ? 'Sign in to continue' : 'Create an account'}
+        </p>
+
+        <input
+          type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email" required
+          className="mt-5 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+        />
+        <input
+          type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password" required minLength={6}
+          className="mt-3 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+        />
+
+        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+
+        <button
+          type="submit" disabled={busy}
+          className="mt-5 w-full rounded-md bg-slate-900 py-2.5 text-sm font-medium text-white disabled:opacity-50"
+        >
+          {busy ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Sign up'}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
+          className="mt-3 w-full text-center text-sm text-slate-500 hover:text-slate-900"
+        >
+          {mode === 'login' ? 'Need an account? Sign up' : 'Have an account? Sign in'}
+        </button>
+      </form>
+    </div>
+  );
+}

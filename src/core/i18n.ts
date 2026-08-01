@@ -1,0 +1,435 @@
+/**
+ * Lightweight i18n.
+ *
+ * No runtime dependency: dictionaries are plain objects, lookup falls back to
+ * English, and a missing key returns the key itself so gaps are obvious rather
+ * than invisible.
+ */
+
+export type LocaleId = 'en' | 'fa' | 'ar' | 'es' | 'de' | 'fr' | 'tr' | 'zh';
+
+export interface LocaleMeta {
+  id: LocaleId;
+  label: string;      // shown in the language picker, in its own script
+  english: string;
+  dir: 'ltr' | 'rtl';
+  /** Font stack that actually renders this script well. */
+  font?: string;
+}
+
+export const LOCALES: LocaleMeta[] = [
+  { id: 'en', label: 'English',  english: 'English', dir: 'ltr' },
+  { id: 'fa', label: 'فارسی',    english: 'Persian', dir: 'rtl', font: "'Vazirmatn', 'Segoe UI', Tahoma, sans-serif" },
+  { id: 'ar', label: 'العربية',  english: 'Arabic',  dir: 'rtl', font: "'Noto Naskh Arabic', 'Segoe UI', Tahoma, sans-serif" },
+  { id: 'es', label: 'Español',  english: 'Spanish', dir: 'ltr' },
+  { id: 'de', label: 'Deutsch',  english: 'German',  dir: 'ltr' },
+  { id: 'fr', label: 'Français', english: 'French',  dir: 'ltr' },
+  { id: 'tr', label: 'Türkçe',   english: 'Turkish', dir: 'ltr' },
+  { id: 'zh', label: '简体中文',  english: 'Chinese', dir: 'ltr', font: "'Noto Sans SC', 'Microsoft YaHei', sans-serif" },
+];
+
+export const localeMeta = (id: LocaleId): LocaleMeta =>
+  LOCALES.find((l) => l.id === id) ?? LOCALES[0];
+
+type Dict = Record<string, string>;
+
+const en: Dict = {
+  // nav
+  'nav.dashboard': 'Dashboard',
+  'nav.projects': 'Projects',
+  'nav.templates': 'Templates',
+  'nav.database': 'Database',
+  'nav.api': 'API',
+  'nav.export': 'Export',
+  'nav.settings': 'Settings',
+  'nav.needsProject': 'project',
+  'nav.openSource': 'Open source',
+  'nav.freeForever': 'Free forever',
+  'nav.support': 'Support the project',
+
+  // support
+  'support.badge': 'Free and open source',
+  'support.title': 'Skaffo is free — and stays free',
+  'support.intro': 'Every feature is unlocked. There is no paid tier, no trial, and nothing behind a wall. If it saves you time, these are the ways you can help.',
+  'support.freeWays': 'Costs nothing',
+  'support.star': 'Star on GitHub',
+  'support.starHint': 'The single most useful thing you can do',
+  'support.report': 'Report a bug',
+  'support.reportHint': 'Broken things get fixed faster when reported',
+  'support.share': 'Tell someone',
+  'support.shareHint': 'A tweet or a link to a friend goes a long way',
+  'support.feedback': 'Send feedback',
+  'support.feedbackHint': 'Tell me what is missing or confusing',
+  'support.donate': 'Donate crypto',
+  'support.optional': 'entirely optional',
+  'support.donateHint': 'Only if Skaffo genuinely saved you time. Nothing changes in the app either way — there is nothing to unlock.',
+  'support.copied': 'Copied',
+  'support.contactHint': 'Questions, or want to arrange another way to donate? Ask on',
+  'support.discussions': 'GitHub Discussions',
+  'support.promise': 'The promise',
+  'support.promiseHint': 'Skaffo will not add a paid tier, telemetry, or ads. Everything runs on your machine and your projects never leave it.',
+  'common.copy': 'Copy',
+  'nav.openFirst': 'Open a project first',
+
+  // common
+  'common.create': 'Create',
+  'common.open': 'Open',
+  'common.cancel': 'Cancel',
+  'common.save': 'Save',
+  'common.delete': 'Delete',
+  'common.search': 'Search…',
+  'common.refresh': 'Refresh',
+  'common.loading': 'Loading…',
+  'common.files': 'Files',
+  'common.lines': 'Lines',
+  'common.size': 'Size',
+  'common.tables': 'Tables',
+  'common.never': 'never',
+  'common.none': 'None',
+  'common.yes': 'Yes',
+  'common.no': 'No',
+
+  // dashboard
+  'dash.welcome': 'Welcome back',
+  'dash.tagline': 'The fastest way to start any software project.',
+  'dash.createProject': 'Create Project',
+  'dash.openProject': 'Open Project',
+  'dash.build': 'Build',
+  'dash.recentProjects': 'Recent Projects',
+  'dash.viewAll': 'View all',
+  'dash.statistics': 'Project Statistics',
+  'dash.activity': 'Recent Activity',
+  'dash.pinned': 'Pinned Projects',
+  'dash.latestExport': 'Latest Export',
+  'dash.latestBuild': 'Latest Build',
+  'dash.endpoints': 'Endpoints',
+  'dash.lastBuild': 'Last Build',
+  'dash.nothingPinned': 'Nothing pinned yet.',
+  'dash.noExports': 'No exports yet.',
+  'dash.noBuilds': 'No builds yet.',
+
+  // projects
+  'projects.title': 'Projects',
+  'projects.count': 'projects in your workspace',
+  'projects.new': 'New Project',
+  'projects.empty': 'No projects yet',
+  'projects.emptyHint': 'Create your first project to get started.',
+  'projects.noMatch': 'No matches',
+  'projects.updated': 'Updated',
+  'projects.sample': 'Sample',
+  'projects.sampleHint': 'Seeded so the app is not empty on first run — delete it any time.',
+  'projects.built': 'Built',
+
+  // settings
+  'settings.title': 'Settings',
+  'settings.subtitle': 'Preferences apply to every new project.',
+  'settings.appearance': 'Appearance',
+  'settings.theme': 'Theme',
+  'settings.themeHint': 'Changes apply instantly',
+  'settings.language': 'Language',
+  'settings.languageHint': 'Layout flips automatically for RTL scripts',
+  'settings.accent': 'Accent Color',
+  'settings.autoSave': 'Auto Save',
+  'settings.autoSaveHint': 'Persist schema changes as you type',
+  'settings.defaults': 'Defaults',
+  'settings.defaultBackend': 'Default Backend',
+  'settings.defaultFrontend': 'Default Frontend',
+  'settings.defaultDatabase': 'Default Database',
+  'settings.workspace': 'Default Workspace',
+  'settings.maintenance': 'Maintenance',
+  'settings.checkUpdates': 'Check for Updates',
+  'settings.backup': 'Backup',
+  'settings.backupHint': 'Export all projects + settings as JSON',
+  'settings.restore': 'Restore',
+  'settings.restoreHint': 'Import a previous backup file',
+  'settings.modules': 'Modules',
+  'settings.modulesHint': 'Every feature is an isolated plugin.',
+  'settings.reduceMotion': 'Reduce Motion',
+  'settings.reduceMotionHint': 'Disable animations for better performance',
+
+  // database
+  'db.tables': 'Tables',
+  'db.newTable': 'New Table',
+  'db.relations': 'Relations',
+  'db.emptySchema': 'Empty schema',
+  'db.emptyHint': 'Add your first table, then drag between nodes to create a relation.',
+  'db.addColumn': 'Add Column',
+  'db.undo': 'Undo',
+  'db.redo': 'Redo',
+  'db.import': 'Import schema',
+  'db.exportSql': 'Export SQL',
+  'db.valid': 'Schema is valid',
+  'db.issues': 'Schema issues',
+  'db.recheck': 'Recheck',
+
+  // api
+  'api.entities': 'Entities',
+  'api.allEndpoints': 'All endpoints',
+  'api.generateCrud': 'Generate CRUD',
+  'api.endpoint': 'Endpoint',
+  'api.endpoints': 'Endpoints',
+  'api.queryFeatures': 'Query Features',
+  'api.artifacts': 'Generated Artifacts',
+  'api.preview': 'Preview',
+
+  // export
+  'export.title': 'Export',
+  'export.format': 'Format',
+  'export.generate': 'Generate',
+  'export.dryRun': 'Dry run',
+  'export.createZip': 'Create ZIP',
+  'export.openFolder': 'Open Folder',
+  'export.report': 'Report',
+  'export.changes': 'Changes',
+  'export.output': 'Output',
+  'export.written': 'Written',
+  'export.merged': 'Merged',
+  'export.skipped': 'Skipped',
+  'export.conflicts': 'Conflicts',
+  'export.changed': 'Changed',
+  'export.byArea': 'Files by area',
+};
+
+/** Only the visible surface is translated; the rest falls back to English. */
+const fa: Dict = {
+  'nav.dashboard': 'داشبورد', 'nav.projects': 'پروژه‌ها', 'nav.templates': 'قالب‌ها',
+  'nav.database': 'دیتابیس', 'nav.api': 'API', 'nav.export': 'خروجی', 'nav.settings': 'تنظیمات',
+  'nav.needsProject': 'پروژه', 'nav.openSource': 'متن‌باز', 'nav.freeForever': 'همیشه رایگان', 'nav.support': 'حمایت از پروژه',
+  'support.badge': 'رایگان و متن‌باز',
+  'support.title': 'اسکافو رایگان است — و رایگان می‌ماند',
+  'support.intro': 'همهٔ قابلیت‌ها باز هستند. نه نسخهٔ پولی داریم، نه دورهٔ آزمایشی، نه چیزی پشت قفل. اگر در وقتتان صرفه‌جویی کرد، از این راه‌ها می‌توانید کمک کنید.',
+  'support.freeWays': 'رایگان و بی‌هزینه',
+  'support.star': 'ستاره در گیت‌هاب', 'support.starHint': 'مفیدترین کاری که می‌توانید بکنید',
+  'support.report': 'گزارش باگ', 'support.reportHint': 'مشکلی که گزارش شود سریع‌تر حل می‌شود',
+  'support.share': 'معرفی به دیگران', 'support.shareHint': 'یک لینک به یک دوست خیلی کمک می‌کند',
+  'support.feedback': 'ارسال بازخورد', 'support.feedbackHint': 'بگویید چه چیزی کم است یا گیج‌کننده',
+  'support.donate': 'حمایت مالی با رمزارز', 'support.optional': 'کاملاً اختیاری',
+  'support.donateHint': 'فقط اگر واقعاً در وقتتان صرفه‌جویی کرد. در هر صورت چیزی در برنامه تغییر نمی‌کند — چیزی برای باز کردن وجود ندارد.',
+  'support.copied': 'کپی شد',
+  'support.contactHint': 'سؤالی دارید یا راه دیگری برای حمایت می‌خواهید؟ بپرسید در',
+  'support.discussions': 'گفتگوهای گیت‌هاب',
+  'support.promise': 'قول ما',
+  'support.promiseHint': 'اسکافو هرگز نسخهٔ پولی، ردیابی یا تبلیغات اضافه نمی‌کند. همه‌چیز روی سیستم خودتان اجرا می‌شود و پروژه‌هایتان جایی نمی‌روند.',
+  'common.copy': 'کپی',
+  'nav.openFirst': 'اول یک پروژه باز کنید',
+  'common.create': 'ساختن', 'common.open': 'باز کردن', 'common.cancel': 'انصراف',
+  'common.save': 'ذخیره', 'common.delete': 'حذف', 'common.search': 'جستجو…',
+  'common.refresh': 'بازخوانی', 'common.loading': 'در حال بارگذاری…',
+  'common.files': 'فایل‌ها', 'common.lines': 'خطوط', 'common.size': 'حجم',
+  'common.tables': 'جدول‌ها', 'common.never': 'هرگز', 'common.none': 'هیچ',
+  'common.yes': 'بله', 'common.no': 'خیر',
+  'dash.welcome': 'خوش برگشتی', 'dash.tagline': 'سریع‌ترین راه شروع هر پروژهٔ نرم‌افزاری.',
+  'dash.createProject': 'ساخت پروژه', 'dash.openProject': 'باز کردن پروژه', 'dash.build': 'بیلد',
+  'dash.recentProjects': 'پروژه‌های اخیر', 'dash.viewAll': 'مشاهدهٔ همه',
+  'dash.statistics': 'آمار پروژه', 'dash.activity': 'فعالیت‌های اخیر',
+  'dash.pinned': 'پروژه‌های سنجاق‌شده', 'dash.latestExport': 'آخرین خروجی',
+  'dash.latestBuild': 'آخرین بیلد', 'dash.endpoints': 'اندپوینت‌ها',
+  'dash.lastBuild': 'آخرین بیلد', 'dash.nothingPinned': 'هنوز چیزی سنجاق نشده.',
+  'dash.noExports': 'هنوز خروجی گرفته نشده.', 'dash.noBuilds': 'هنوز بیلدی انجام نشده.',
+  'projects.title': 'پروژه‌ها', 'projects.count': 'پروژه در فضای کاری شما',
+  'projects.new': 'پروژهٔ جدید', 'projects.empty': 'هنوز پروژه‌ای نیست',
+  'projects.emptyHint': 'اولین پروژه‌تان را بسازید.', 'projects.noMatch': 'موردی یافت نشد',
+  'projects.updated': 'به‌روزرسانی', 'projects.sample': 'نمونه',
+  'projects.sampleHint': 'برای اینکه اپ در اولین اجرا خالی نباشد ساخته شده — هر وقت خواستید حذفش کنید.', 'projects.built': 'بیلد',
+  'settings.title': 'تنظیمات', 'settings.subtitle': 'این تنظیمات روی پروژه‌های جدید اعمال می‌شود.',
+  'settings.appearance': 'ظاهر', 'settings.theme': 'پوسته',
+  'settings.themeHint': 'تغییرات بلافاصله اعمال می‌شود',
+  'settings.language': 'زبان', 'settings.languageHint': 'چیدمان برای زبان‌های راست‌به‌چپ خودکار برمی‌گردد',
+  'settings.accent': 'رنگ اصلی', 'settings.autoSave': 'ذخیرهٔ خودکار',
+  'settings.autoSaveHint': 'تغییرات را همان لحظه ذخیره کن',
+  'settings.defaults': 'پیش‌فرض‌ها', 'settings.defaultBackend': 'بک‌اند پیش‌فرض',
+  'settings.defaultFrontend': 'فرانت‌اند پیش‌فرض', 'settings.defaultDatabase': 'دیتابیس پیش‌فرض',
+  'settings.workspace': 'پوشهٔ کاری', 'settings.maintenance': 'نگهداری',
+  'settings.checkUpdates': 'بررسی به‌روزرسانی', 'settings.backup': 'پشتیبان‌گیری',
+  'settings.backupHint': 'خروجی JSON از همهٔ پروژه‌ها و تنظیمات',
+  'settings.restore': 'بازیابی', 'settings.restoreHint': 'وارد کردن فایل پشتیبان',
+  'settings.modules': 'ماژول‌ها', 'settings.modulesHint': 'هر قابلیت یک پلاگین مستقل است.',
+  'settings.reduceMotion': 'کاهش انیمیشن',
+  'settings.reduceMotionHint': 'غیرفعال کردن انیمیشن‌ها برای سرعت بیشتر',
+  'db.tables': 'جدول‌ها', 'db.newTable': 'جدول جدید', 'db.relations': 'روابط',
+  'db.emptySchema': 'شمای خالی',
+  'db.emptyHint': 'اولین جدول را بسازید، سپس بین نودها بکشید تا رابطه ایجاد شود.',
+  'db.addColumn': 'افزودن ستون', 'db.undo': 'واگرد', 'db.redo': 'ازنو',
+  'db.import': 'وارد کردن شما', 'db.exportSql': 'خروجی SQL',
+  'db.valid': 'شما معتبر است', 'db.issues': 'مشکلات شما', 'db.recheck': 'بررسی دوباره',
+  'api.entities': 'موجودیت‌ها', 'api.allEndpoints': 'همهٔ اندپوینت‌ها',
+  'api.generateCrud': 'ساخت CRUD', 'api.endpoint': 'اندپوینت', 'api.endpoints': 'اندپوینت‌ها',
+  'api.queryFeatures': 'قابلیت‌های کوئری', 'api.artifacts': 'فایل‌های تولیدشده',
+  'api.preview': 'پیش‌نمایش',
+  'export.title': 'خروجی', 'export.format': 'قالب', 'export.generate': 'تولید',
+  'export.dryRun': 'اجرای آزمایشی', 'export.createZip': 'ساخت ZIP',
+  'export.openFolder': 'باز کردن پوشه', 'export.report': 'گزارش', 'export.changes': 'تغییرات',
+  'export.output': 'خروجی', 'export.written': 'نوشته‌شده', 'export.merged': 'ادغام‌شده',
+  'export.skipped': 'رد‌شده', 'export.conflicts': 'تداخل', 'export.changed': 'تغییریافته',
+  'export.byArea': 'فایل‌ها بر اساس بخش',
+};
+
+const ar: Dict = {
+  'nav.dashboard': 'لوحة التحكم', 'nav.projects': 'المشاريع', 'nav.templates': 'القوالب',
+  'nav.database': 'قاعدة البيانات', 'nav.api': 'API', 'nav.export': 'تصدير', 'nav.settings': 'الإعدادات',
+  'nav.openSource': 'مفتوح المصدر', 'nav.freeForever': 'مجاني للأبد', 'nav.support': 'ادعم المشروع',
+  'support.title': 'سكافو مجاني — وسيبقى مجانياً', 'common.copy': 'نسخ',
+  'nav.openFirst': 'افتح مشروعاً أولاً',
+  'common.create': 'إنشاء', 'common.open': 'فتح', 'common.cancel': 'إلغاء',
+  'common.save': 'حفظ', 'common.delete': 'حذف', 'common.search': 'بحث…',
+  'common.refresh': 'تحديث', 'common.loading': 'جارٍ التحميل…', 'common.files': 'الملفات',
+  'common.lines': 'الأسطر', 'common.size': 'الحجم', 'common.tables': 'الجداول',
+  'common.never': 'أبداً', 'common.none': 'لا شيء', 'common.yes': 'نعم', 'common.no': 'لا',
+  'dash.welcome': 'مرحباً بعودتك', 'dash.tagline': 'أسرع طريقة لبدء أي مشروع برمجي.',
+  'dash.createProject': 'إنشاء مشروع', 'dash.openProject': 'فتح مشروع', 'dash.build': 'بناء',
+  'dash.recentProjects': 'المشاريع الأخيرة', 'dash.viewAll': 'عرض الكل',
+  'dash.statistics': 'إحصائيات المشروع', 'dash.activity': 'النشاط الأخير',
+  'dash.pinned': 'المشاريع المثبتة', 'dash.latestExport': 'آخر تصدير',
+  'dash.latestBuild': 'آخر بناء', 'dash.endpoints': 'نقاط النهاية', 'dash.lastBuild': 'آخر بناء',
+  'dash.nothingPinned': 'لا يوجد شيء مثبت.', 'dash.noExports': 'لا توجد تصديرات.',
+  'dash.noBuilds': 'لا توجد عمليات بناء.',
+  'projects.title': 'المشاريع', 'projects.count': 'مشروع في مساحة العمل',
+  'projects.new': 'مشروع جديد', 'projects.sample': 'عينة', 'projects.empty': 'لا توجد مشاريع',
+  'projects.emptyHint': 'أنشئ مشروعك الأول للبدء.', 'projects.noMatch': 'لا توجد نتائج',
+  'settings.title': 'الإعدادات', 'settings.appearance': 'المظهر', 'settings.theme': 'السمة',
+  'settings.language': 'اللغة', 'settings.accent': 'اللون الأساسي',
+  'settings.autoSave': 'حفظ تلقائي', 'settings.defaults': 'الافتراضيات',
+  'settings.maintenance': 'الصيانة', 'settings.modules': 'الوحدات',
+  'settings.reduceMotion': 'تقليل الحركة',
+  'db.tables': 'الجداول', 'db.newTable': 'جدول جديد', 'db.relations': 'العلاقات',
+  'db.undo': 'تراجع', 'db.redo': 'إعادة', 'db.exportSql': 'تصدير SQL',
+  'api.entities': 'الكيانات', 'api.allEndpoints': 'كل نقاط النهاية',
+  'export.title': 'تصدير', 'export.generate': 'توليد', 'export.report': 'تقرير',
+};
+
+const es: Dict = {
+  'nav.dashboard': 'Panel', 'nav.projects': 'Proyectos', 'nav.templates': 'Plantillas',
+  'nav.database': 'Base de datos', 'nav.api': 'API', 'nav.export': 'Exportar',
+  'nav.settings': 'Ajustes', 'nav.openSource': 'Código abierto', 'nav.freeForever': 'Gratis siempre',
+  'nav.support': 'Apoyar el proyecto', 'common.copy': 'Copiar', 'nav.openFirst': 'Abre un proyecto primero',
+  'common.create': 'Crear', 'common.open': 'Abrir', 'common.cancel': 'Cancelar',
+  'common.save': 'Guardar', 'common.delete': 'Eliminar', 'common.search': 'Buscar…',
+  'common.refresh': 'Actualizar', 'common.loading': 'Cargando…', 'common.files': 'Archivos',
+  'common.lines': 'Líneas', 'common.size': 'Tamaño', 'common.tables': 'Tablas',
+  'dash.welcome': 'Bienvenido de nuevo',
+  'dash.tagline': 'La forma más rápida de empezar cualquier proyecto.',
+  'dash.createProject': 'Crear proyecto', 'dash.openProject': 'Abrir proyecto',
+  'dash.recentProjects': 'Proyectos recientes', 'dash.viewAll': 'Ver todo',
+  'dash.statistics': 'Estadísticas', 'dash.activity': 'Actividad reciente',
+  'dash.pinned': 'Proyectos fijados', 'dash.latestExport': 'Última exportación',
+  'dash.latestBuild': 'Última compilación',
+  'projects.title': 'Proyectos', 'projects.new': 'Nuevo proyecto', 'projects.sample': 'Ejemplo',
+  'settings.title': 'Ajustes', 'settings.appearance': 'Apariencia', 'settings.theme': 'Tema',
+  'settings.language': 'Idioma', 'settings.accent': 'Color de acento',
+  'settings.defaults': 'Predeterminados', 'settings.maintenance': 'Mantenimiento',
+  'settings.reduceMotion': 'Reducir movimiento',
+  'db.tables': 'Tablas', 'db.newTable': 'Nueva tabla', 'db.relations': 'Relaciones',
+  'db.undo': 'Deshacer', 'db.redo': 'Rehacer',
+  'api.entities': 'Entidades', 'export.title': 'Exportar', 'export.generate': 'Generar',
+};
+
+const de: Dict = {
+  'nav.dashboard': 'Übersicht', 'nav.projects': 'Projekte', 'nav.templates': 'Vorlagen',
+  'nav.database': 'Datenbank', 'nav.api': 'API', 'nav.export': 'Export',
+  'nav.settings': 'Einstellungen', 'nav.openSource': 'Open Source', 'nav.freeForever': 'Für immer kostenlos',
+  'nav.support': 'Projekt unterstützen', 'common.copy': 'Kopieren', 'nav.openFirst': 'Zuerst ein Projekt öffnen',
+  'common.create': 'Erstellen', 'common.open': 'Öffnen', 'common.cancel': 'Abbrechen',
+  'common.save': 'Speichern', 'common.delete': 'Löschen', 'common.search': 'Suchen…',
+  'common.refresh': 'Aktualisieren', 'common.files': 'Dateien', 'common.lines': 'Zeilen',
+  'common.size': 'Größe', 'common.tables': 'Tabellen',
+  'dash.welcome': 'Willkommen zurück',
+  'dash.tagline': 'Der schnellste Weg, ein Softwareprojekt zu starten.',
+  'dash.createProject': 'Projekt erstellen', 'dash.openProject': 'Projekt öffnen',
+  'dash.recentProjects': 'Letzte Projekte', 'dash.viewAll': 'Alle anzeigen',
+  'dash.statistics': 'Statistiken', 'dash.activity': 'Letzte Aktivität',
+  'dash.pinned': 'Angeheftete Projekte',
+  'projects.title': 'Projekte', 'projects.new': 'Neues Projekt', 'projects.sample': 'Beispiel',
+  'settings.title': 'Einstellungen', 'settings.appearance': 'Darstellung',
+  'settings.theme': 'Design', 'settings.language': 'Sprache', 'settings.accent': 'Akzentfarbe',
+  'settings.defaults': 'Standardwerte', 'settings.maintenance': 'Wartung',
+  'settings.reduceMotion': 'Animationen reduzieren',
+  'db.tables': 'Tabellen', 'db.newTable': 'Neue Tabelle', 'db.undo': 'Rückgängig',
+  'db.redo': 'Wiederholen', 'export.title': 'Export', 'export.generate': 'Generieren',
+};
+
+const fr: Dict = {
+  'nav.dashboard': 'Tableau de bord', 'nav.projects': 'Projets', 'nav.templates': 'Modèles',
+  'nav.database': 'Base de données', 'nav.api': 'API', 'nav.export': 'Exporter',
+  'nav.settings': 'Paramètres', 'nav.openSource': 'Open source', 'nav.freeForever': 'Gratuit pour toujours',
+  'nav.support': 'Soutenir le projet', 'common.copy': 'Copier', 'nav.openFirst': 'Ouvrez d\u2019abord un projet',
+  'common.create': 'Créer', 'common.open': 'Ouvrir', 'common.cancel': 'Annuler',
+  'common.save': 'Enregistrer', 'common.delete': 'Supprimer', 'common.search': 'Rechercher…',
+  'common.refresh': 'Actualiser', 'common.files': 'Fichiers', 'common.lines': 'Lignes',
+  'common.size': 'Taille', 'common.tables': 'Tables',
+  'dash.welcome': 'Bon retour',
+  'dash.tagline': 'La façon la plus rapide de démarrer un projet.',
+  'dash.createProject': 'Créer un projet', 'dash.openProject': 'Ouvrir un projet',
+  'dash.recentProjects': 'Projets récents', 'dash.viewAll': 'Tout voir',
+  'dash.statistics': 'Statistiques', 'dash.activity': 'Activité récente',
+  'projects.title': 'Projets', 'projects.new': 'Nouveau projet', 'projects.sample': 'Exemple',
+  'settings.title': 'Paramètres', 'settings.appearance': 'Apparence', 'settings.theme': 'Thème',
+  'settings.language': 'Langue', 'settings.accent': 'Couleur d\u2019accent',
+  'settings.reduceMotion': 'Réduire les animations',
+  'db.tables': 'Tables', 'db.newTable': 'Nouvelle table', 'db.undo': 'Annuler',
+  'export.title': 'Exporter', 'export.generate': 'Générer',
+};
+
+const tr: Dict = {
+  'nav.dashboard': 'Panel', 'nav.projects': 'Projeler', 'nav.templates': 'Şablonlar',
+  'nav.database': 'Veritabanı', 'nav.api': 'API', 'nav.export': 'Dışa Aktar',
+  'nav.settings': 'Ayarlar', 'nav.openSource': 'Açık kaynak', 'nav.freeForever': 'Sonsuza dek ücretsiz',
+  'nav.support': 'Projeyi destekle', 'common.copy': 'Kopyala', 'nav.openFirst': 'Önce bir proje açın',
+  'common.create': 'Oluştur', 'common.open': 'Aç', 'common.cancel': 'İptal',
+  'common.save': 'Kaydet', 'common.delete': 'Sil', 'common.search': 'Ara…',
+  'common.refresh': 'Yenile', 'common.files': 'Dosyalar', 'common.lines': 'Satırlar',
+  'common.size': 'Boyut', 'common.tables': 'Tablolar',
+  'dash.welcome': 'Tekrar hoş geldiniz',
+  'dash.tagline': 'Herhangi bir yazılım projesine başlamanın en hızlı yolu.',
+  'dash.createProject': 'Proje Oluştur', 'dash.openProject': 'Proje Aç',
+  'dash.recentProjects': 'Son Projeler', 'dash.viewAll': 'Tümünü gör',
+  'dash.statistics': 'İstatistikler', 'dash.activity': 'Son Etkinlikler',
+  'projects.title': 'Projeler', 'projects.new': 'Yeni Proje', 'projects.sample': 'Örnek',
+  'settings.title': 'Ayarlar', 'settings.appearance': 'Görünüm', 'settings.theme': 'Tema',
+  'settings.language': 'Dil', 'settings.accent': 'Vurgu Rengi',
+  'settings.reduceMotion': 'Hareketi Azalt',
+  'db.tables': 'Tablolar', 'db.newTable': 'Yeni Tablo', 'db.undo': 'Geri Al',
+  'export.title': 'Dışa Aktar', 'export.generate': 'Oluştur',
+};
+
+const zh: Dict = {
+  'nav.dashboard': '仪表板', 'nav.projects': '项目', 'nav.templates': '模板',
+  'nav.database': '数据库', 'nav.api': 'API', 'nav.export': '导出', 'nav.settings': '设置',
+  'nav.openSource': '开源', 'nav.freeForever': '永久免费', 'nav.support': '支持项目', 'common.copy': '复制',
+  'nav.openFirst': '请先打开一个项目',
+  'common.create': '创建', 'common.open': '打开', 'common.cancel': '取消',
+  'common.save': '保存', 'common.delete': '删除', 'common.search': '搜索…',
+  'common.refresh': '刷新', 'common.files': '文件', 'common.lines': '行数',
+  'common.size': '大小', 'common.tables': '表',
+  'dash.welcome': '欢迎回来', 'dash.tagline': '启动任何软件项目的最快方式。',
+  'dash.createProject': '创建项目', 'dash.openProject': '打开项目',
+  'dash.recentProjects': '最近的项目', 'dash.viewAll': '查看全部',
+  'dash.statistics': '项目统计', 'dash.activity': '最近活动', 'dash.pinned': '已固定项目',
+  'projects.title': '项目', 'projects.new': '新建项目', 'projects.sample': '示例',
+  'settings.title': '设置', 'settings.appearance': '外观', 'settings.theme': '主题',
+  'settings.language': '语言', 'settings.accent': '强调色', 'settings.defaults': '默认值',
+  'settings.maintenance': '维护', 'settings.reduceMotion': '减少动画',
+  'db.tables': '表', 'db.newTable': '新建表', 'db.relations': '关系',
+  'db.undo': '撤销', 'db.redo': '重做', 'db.exportSql': '导出 SQL',
+  'api.entities': '实体', 'export.title': '导出', 'export.generate': '生成',
+};
+
+const DICTS: Record<LocaleId, Dict> = { en, fa, ar, es, de, fr, tr, zh };
+
+/** Build a translator for one locale. Falls back to English, then the key. */
+export function makeT(locale: LocaleId) {
+  const dict = DICTS[locale] ?? en;
+  return (key: string, fallback?: string): string =>
+    dict[key] ?? en[key] ?? fallback ?? key;
+}
+
+export function applyLocale(locale: LocaleId): void {
+  const meta = localeMeta(locale);
+  const root = document.documentElement;
+  root.lang = meta.id;
+  root.dir = meta.dir;
+  root.dataset.dir = meta.dir;
+  root.style.setProperty(
+    '--cf-font',
+    meta.font ?? "'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif",
+  );
+}

@@ -1,0 +1,35 @@
+# dependencies
+node_modules/
+engine/.venv/
+.venv/
+
+# build output
+dist/
+dist-electron/
+release/
+build/
+
+# python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# local data — never commit someone's projects or database
+*.db
+*.db-wal
+*.db-shm
+*.sqlite3
+
+# environment / secrets
+.env
+.env.local
+.env.*.local
+
+# editor & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log

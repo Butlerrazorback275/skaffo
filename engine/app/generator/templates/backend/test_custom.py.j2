@@ -1,0 +1,51 @@
+"""Contract tests for hand-designed endpoints.
+
+These assert the endpoint exists and is wired correctly. They intentionally
+accept 501 so the suite stays green until you implement each one.
+"""
+<% if auth != 'none' %>
+import pytest
+
+pytestmark = pytest.mark.skip(reason="Auth required — add a token fixture to enable")
+<% endif %>
+
+<% for c in custom %>
+
+def test_@@ c.func @@_is_registered(client):
+    """@@ c.method | upper @@ @@ c.path @@ should be routed."""
+    path = "@@ c.path @@"
+<% for p in c.path_params %>
+<% if p.py == 'int' %>
+    path = path.replace("{@@ p.name @@}", "1")
+<% else %>
+    path = path.replace("{@@ p.name @@}", "test")
+<% endif %>
+<% endfor %>
+
+<% if c.has_body %>
+    body = {
+<% for f in c.body_fields %>
+<% if f.py == 'int' %>
+        "@@ f.name @@": 1,
+<% elif f.py == 'float' %>
+        "@@ f.name @@": 1.5,
+<% elif f.py == 'bool' %>
+        "@@ f.name @@": True,
+<% elif f.py == 'dict' %>
+        "@@ f.name @@": {},
+<% else %>
+        "@@ f.name @@": "test",
+<% endif %>
+<% endfor %>
+    }
+    res = client.@@ c.method @@(path, json=body)
+<% else %>
+    res = client.@@ c.method @@(path)
+<% endif %>
+
+    # 404 would mean the route is missing entirely.
+    assert res.status_code != 404, "endpoint is not registered"
+    # 501 is the generated placeholder; anything else means it is implemented.
+    assert res.status_code in (@@ c.status @@, 501, 422)
+
+<% endfor %>

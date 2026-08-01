@@ -1,0 +1,83 @@
+"""Hand-designed endpoints.
+
+Each function body is a protected region: write your logic between the
+skaffo:keep markers and it survives every regeneration.
+"""
+<% if custom_imports.datetime %>
+from datetime import date, datetime  # noqa: F401
+<% endif %>
+<% if custom_imports.decimal %>
+from decimal import Decimal  # noqa: F401
+<% endif %>
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from app.core.database import get_db
+<% if auth != 'none' %>
+from app.core.deps import get_current_user
+<% endif %>
+<% for e in entities %>
+from app.models.@@ e.snake @@ import @@ e.class @@  # noqa: F401
+<% endfor %>
+
+router = APIRouter(tags=["custom"])
+
+<% for c in custom %>
+<% if c.has_body %>
+
+
+class @@ c.func | pascal @@Body(BaseModel):
+<% for f in c.body_fields %>
+    @@ f.name @@: @@ f.py @@<% if not f.required %> | None = None<% endif %>
+
+<% endfor %>
+<% endif %>
+
+
+@router.@@ c.method @@(
+    "@@ c.path @@",
+    status_code=@@ c.status @@,
+    summary="@@ c.summary @@",
+<% if c.auth and auth != 'none' %>
+    dependencies=[Depends(get_current_user)],
+<% endif %>
+)
+def @@ c.func @@(
+<% for p in c.path_params %>
+    @@ p.name @@: @@ p.py @@,
+<% endfor %>
+<% if c.has_body %>
+    payload: @@ c.func | pascal @@Body,
+<% endif %>
+<% for q in c.query_params %>
+<% if q.required %>
+    @@ q.name @@: @@ q.py @@ = Query(..., description="@@ q.description @@"),
+<% else %>
+    @@ q.name @@: @@ q.py @@ | None = Query(@@ q.default @@, description="@@ q.description @@"),
+<% endif %>
+<% endfor %>
+    db: Session = Depends(get_db),
+):
+    """@@ c.summary @@
+<% if c.description %>
+
+    @@ c.description @@
+<% endif %>
+    """
+    # skaffo:keep:start @@ c.func @@
+    # Your implementation goes here — this block is never overwritten.
+<% if c.model %>
+    #
+    # Example:
+    #   items = db.query(@@ c.model @@).all()
+    #   return items
+<% endif %>
+    raise HTTPException(
+        status.HTTP_501_NOT_IMPLEMENTED,
+        "@@ c.func @@ is not implemented yet",
+    )
+    # skaffo:keep:end
+
+<% endfor %>

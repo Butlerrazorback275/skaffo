@@ -1,0 +1,52 @@
+"""@@ e.class @@ ORM model."""
+<% if e.needs_datetime %>
+from datetime import datetime, date  # noqa: F401
+<% endif %>
+<% if e.needs_decimal %>
+from decimal import Decimal  # noqa: F401
+<% endif %>
+from sqlalchemy import (  # noqa: F401
+    JSON, BigInteger, Boolean, Date, DateTime, Float, ForeignKey,
+    Integer, Numeric, String, Text,
+)
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.core.database import Base
+
+
+class @@ e.class @@(Base):
+    __tablename__ = "@@ e.table @@"
+
+<% for c in e.columns %>
+<% if c.fk %>
+    @@ c.name @@: Mapped[@@ c.ann @@] = mapped_column(
+        @@ c.sqla @@,
+        ForeignKey("@@ c.fk.table @@.@@ c.fk.column @@", ondelete="@@ c.fk.on_delete @@"),
+        nullable=@@ 'True' if c.nullable else 'False' @@,
+    )
+<% else %>
+    @@ c.name @@: Mapped[@@ c.ann @@] = mapped_column(
+        @@ c.sqla @@,
+<% if c.pk %>
+        primary_key=True,
+<% if c.raw_type in ('integer', 'bigint') %>
+        autoincrement=True,
+<% endif %>
+<% endif %>
+<% if c.unique and not c.pk %>
+        unique=True,
+        index=True,
+<% endif %>
+<% if not c.pk %>
+        nullable=@@ 'True' if c.nullable else 'False' @@,
+<% endif %>
+<% if c.default %>
+        default=@@ c.default @@,
+<% endif %>
+    )
+<% endif %>
+<% endfor %>
+
+    # skaffo:keep:start @@ e.snake @@-model
+    # Relationships, hybrid properties, __repr__ ... your code is safe here.
+    # skaffo:keep:end

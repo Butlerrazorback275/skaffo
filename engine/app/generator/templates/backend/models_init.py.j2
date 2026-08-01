@@ -1,0 +1,10 @@
+"""Model registry — imported by Base.metadata."""
+<% for e in entities %>
+from app.models.@@ e.snake @@ import @@ e.class @@  # noqa: F401
+<% endfor %>
+
+__all__ = [
+<% for e in entities %>
+    "@@ e.class @@",
+<% endfor %>
+]

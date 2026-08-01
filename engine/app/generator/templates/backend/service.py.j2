@@ -1,0 +1,86 @@
+"""@@ e.class @@ business logic — routers stay thin."""
+from sqlalchemy import func, or_, select
+from sqlalchemy.orm import Session
+
+from app.models.@@ e.snake @@ import @@ e.class @@
+from app.schemas.@@ e.snake @@ import @@ e.class @@Create, @@ e.class @@Update
+
+<% set pk = e.pk.name if e.pk else 'id' %>
+
+def get(db: Session, item_id) -> @@ e.class @@ | None:
+    return db.get(@@ e.class @@, item_id)
+
+
+def list_items(
+    db: Session,
+    *,
+    offset: int = 0,
+    limit: int = 20,
+    q: str | None = None,
+    sort: str | None = None,
+) -> tuple[list[@@ e.class @@], int]:
+    stmt = select(@@ e.class @@)
+    count_stmt = select(func.count()).select_from(@@ e.class @@)
+
+<% if e.opts.search and e.searchable %>
+    if q:
+        pattern = f"%{q}%"
+        clause = or_(
+<% for s in e.searchable %>
+            @@ e.class @@.@@ s @@.ilike(pattern),
+<% endfor %>
+        )
+        stmt = stmt.where(clause)
+        count_stmt = count_stmt.where(clause)
+<% endif %>
+
+<% if e.opts.sorting %>
+    if sort:
+        desc = sort.startswith("-")
+        field = sort[1:] if desc else sort
+        column = getattr(@@ e.class @@, field, None)
+        if column is not None:
+            stmt = stmt.order_by(column.desc() if desc else column.asc())
+    else:
+        stmt = stmt.order_by(@@ e.class @@.@@ pk @@.desc())
+<% else %>
+    stmt = stmt.order_by(@@ e.class @@.@@ pk @@.desc())
+<% endif %>
+
+    total = db.scalar(count_stmt) or 0
+    items = list(db.scalars(stmt.offset(offset).limit(limit)))
+    return items, total
+
+
+def create(db: Session, payload: @@ e.class @@Create) -> @@ e.class @@:
+    obj = @@ e.class @@(**payload.model_dump())
+    db.add(obj)
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+
+def update(db: Session, obj: @@ e.class @@, payload: @@ e.class @@Update) -> @@ e.class @@:
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(obj, field, value)
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+
+def replace(db: Session, obj: @@ e.class @@, payload: @@ e.class @@Create) -> @@ e.class @@:
+    for field, value in payload.model_dump().items():
+        setattr(obj, field, value)
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+
+def delete(db: Session, obj: @@ e.class @@) -> None:
+    db.delete(obj)
+    db.commit()
+
+
+# skaffo:keep:start @@ e.snake @@-service
+# Custom business logic lives here and survives regeneration.
+# skaffo:keep:end

@@ -1,0 +1,54 @@
+"""Smoke tests for /api/@@ e.plural @@."""
+<% if auth != 'none' %>
+import pytest
+
+pytestmark = pytest.mark.skip(reason="Auth required — add a token fixture to enable")
+<% endif %>
+
+
+def test_list_@@ e.plural @@_empty(client):
+    res = client.get("/api/@@ e.plural @@")
+    assert res.status_code == 200
+    body = res.json()
+    assert body["total"] == 0
+    assert body["items"] == []
+
+
+def test_create_and_get_@@ e.singular @@(client):
+    payload = {
+<% for c in e.writable %>
+<% if c.raw_type in ('integer', 'bigint') %>
+        "@@ c.name @@": 1,
+<% elif c.raw_type in ('float', 'decimal') %>
+        "@@ c.name @@": 1.5,
+<% elif c.raw_type == 'boolean' %>
+        "@@ c.name @@": True,
+<% elif c.raw_type in ('datetime',) %>
+        "@@ c.name @@": "2024-01-01T00:00:00",
+<% elif c.raw_type == 'date' %>
+        "@@ c.name @@": "2024-01-01",
+<% elif c.raw_type == 'json' %>
+        "@@ c.name @@": {},
+<% else %>
+        "@@ c.name @@": "test-@@ c.name @@",
+<% endif %>
+<% endfor %>
+    }
+    created = client.post("/api/@@ e.plural @@", json=payload)
+    assert created.status_code == 201, created.text
+
+<% if e.pk %>
+    item_id = created.json()["@@ e.pk.name @@"]
+    fetched = client.get(f"/api/@@ e.plural @@/{item_id}")
+    assert fetched.status_code == 200
+
+    deleted = client.delete(f"/api/@@ e.plural @@/{item_id}")
+    assert deleted.status_code == 204
+
+    missing = client.get(f"/api/@@ e.plural @@/{item_id}")
+    assert missing.status_code == 404
+<% endif %>
+
+
+def test_get_missing_@@ e.singular @@_404(client):
+    assert client.get("/api/@@ e.plural @@/999999").status_code == 404

@@ -1,0 +1,55 @@
+import { Link, Outlet, useLocation } from 'react-router-dom';
+<% if auth != 'none' %>
+import { useAuth } from '../store/auth';
+<% endif %>
+
+const nav = [
+  { to: '/', label: 'Home' },
+<% for e in entities %>
+  { to: '/@@ e.plural @@', label: '@@ e.label @@' },
+<% endfor %>
+];
+
+export default function Layout() {
+  const { pathname } = useLocation();
+<% if auth != 'none' %>
+  const logout = useAuth((s) => s.logout);
+<% endif %>
+
+  return (
+    <div className="min-h-screen">
+      <header className="border-b border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-4">
+          <Link to="/" className="text-lg font-semibold">@@ name @@</Link>
+          <nav className="flex gap-1">
+            {nav.map((n) => (
+              <Link
+                key={n.to}
+                to={n.to}
+                className={`rounded-md px-3 py-1.5 text-sm transition ${
+                  pathname === n.to
+                    ? 'bg-slate-900 text-white'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {n.label}
+              </Link>
+            ))}
+          </nav>
+<% if auth != 'none' %>
+          <button
+            onClick={logout}
+            className="ml-auto rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
+          >
+            Log out
+          </button>
+<% endif %>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-6xl px-6 py-8">
+        <Outlet />
+      </main>
+    </div>
+  );
+}

@@ -1,0 +1,93 @@
+// Typed API client.
+import type { Page } from './types';
+
+const BASE = import.meta.env.VITE_API_URL ?? '';
+
+export class ApiError extends Error {
+  constructor(public status: number, message: string) {
+    super(message);
+  }
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...((init?.headers as Record<string, string>) ?? {}),
+  };
+
+<% if auth != 'none' %>
+  const token = localStorage.getItem('access_token');
+  if (token) headers.Authorization = `Bearer ${token}`;
+<% endif %>
+
+  const res = await fetch(BASE + path, { ...init, headers });
+
+  if (!res.ok) {
+    let detail = res.statusText;
+    try {
+      detail = (await res.json())?.detail ?? detail;
+    } catch { /* body was not JSON */ }
+    throw new ApiError(res.status, detail);
+  }
+  return res.status === 204 ? (undefined as T) : res.json();
+}
+
+export interface ListParams {
+  page?: number;
+  size?: number;
+  q?: string;
+  sort?: string;
+}
+
+function qs(params: ListParams = {}) {
+  const sp = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== '') sp.set(k, String(v));
+  });
+  const s = sp.toString();
+  return s ? `?${s}` : '';
+}
+
+/** Generic CRUD factory — one line per entity. */
+function resource<T, C = Omit<T, 'id'>>(name: string) {
+  return {
+    list: (params?: ListParams) => request<Page<T>>(`/api/${name}${qs(params)}`),
+    get: (id: string | number) => request<T>(`/api/${name}/${id}`),
+    create: (body: C) => request<T>(`/api/${name}`, { method: 'POST', body: JSON.stringify(body) }),
+    replace: (id: string | number, body: C) =>
+      request<T>(`/api/${name}/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+    update: (id: string | number, body: Partial<C>) =>
+      request<T>(`/api/${name}/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    remove: (id: string | number) =>
+      request<void>(`/api/${name}/${id}`, { method: 'DELETE' }),
+  };
+}
+
+<% if has_entities %>
+import type {
+<% for e in entities %>
+  @@ e.pascal @@, @@ e.pascal @@Create,
+<% endfor %>
+} from './types';
+<% endif %>
+
+export const api = {
+  health: () => request<{ status: string }>('/health'),
+<% for e in entities %>
+  @@ e.plural @@: resource<@@ e.pascal @@, @@ e.pascal @@Create>('@@ e.plural @@'),
+<% endfor %>
+<% if auth != 'none' %>
+  auth: {
+    login: (email: string, password: string) =>
+      request<{ access_token: string; refresh_token: string }>('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      }),
+    register: (email: string, password: string) =>
+      request<{ access_token: string; refresh_token: string }>('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      }),
+  },
+<% endif %>
+};

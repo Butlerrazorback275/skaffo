@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Vazirmatn:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark is the boot default; theme.ts overwrites these on load. */
+:root {
+  --cf-bg: #0F172A;
+  --cf-bg-rgb: 15 23 42;
+  --cf-sidebar: #111827;
+  --cf-sidebar-rgb: 17 24 39;
+  --cf-card: #1E293B;
+  --cf-card-rgb: 30 41 59;
+  --cf-line: rgba(148, 163, 184, 0.14);
+  --cf-txt: #F8FAFC;
+  --cf-txt-rgb: 248 250 252;
+  --cf-muted: #94A3B8;
+  --cf-muted-rgb: 148 163 184;
+  --cf-well: rgba(0, 0, 0, 0.25);
+  --cf-raise: rgba(255, 255, 255, 0.03);
+  --cf-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+  --cf-scrim: rgba(0, 0, 0, 0.70);
+  --cf-code: rgba(0, 0, 0, 0.30);
+  --cf-primary: #6366F1;
+  --cf-primary-rgb: 99 102 241;
+  --cf-hover: #7C3AED;
+  --cf-primary-soft: rgba(99, 102, 241, 0.15);
+  --cf-primary-ring: rgba(99, 102, 241, 0.4);
+  --cf-font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: dark;
+}
+
+@layer base {
+  * { -webkit-font-smoothing: antialiased; }
+  html, body, #root { height: 100%; }
+  body {
+    @apply bg-bg text-txt font-sans;
+    overflow: hidden;
+    /* Colour changes animate; layout does not, to avoid jank. */
+    transition: background-color .25s ease, color .25s ease;
+  }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--cf-line); border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--cf-muted); }
+  ::selection { background: var(--cf-primary-soft); }
+
+  /* Light themes need darker form controls than the dark default. */
+  [data-theme="light"] input,
+  [data-theme="light"] select,
+  [data-theme="light"] textarea { color: var(--cf-txt); }
+  [data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(15,23,42,0.18); }
+}
+
+/* ── RTL ──────────────────────────────────────────────
+   Tailwind's logical properties handle most flipping. These cover the
+   few places where a physical direction is baked in. */
+[dir="rtl"] .rtl-flip { transform: scaleX(-1); }
+[dir="rtl"] .react-flow__attribution { direction: ltr; }
+
+/* Code must stay left-to-right even inside an RTL page. */
+[dir="rtl"] pre,
+[dir="rtl"] code,
+[dir="rtl"] .font-mono,
+[dir="rtl"] input.font-mono,
+[dir="rtl"] textarea {
+  direction: ltr;
+  text-align: left;
+}
+
+/* ── Refinements ──────────────────────────────────────
+   Small things that separate "functional" from "considered". */
+
+/* Buttons and cards settle slightly when pressed. */
+@media (prefers-reduced-motion: no-preference) {
+  button:active:not(:disabled) { transform: translateY(0.5px); }
+}
+
+/* Focus rings only for keyboard users — mouse clicks stay clean. */
+:focus-visible {
+  outline: 2px solid var(--cf-primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+/* Tabular figures stop counters jittering as they change. */
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* Headings read tighter at large sizes. */
+h1 { letter-spacing: -0.02em; }
+
+/* A hairline highlight on top of cards suggests a lit surface. */
+.card-sheen { position: relative; }
+.card-sheen::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.07), transparent);
+  pointer-events: none;
+}
+[data-theme="light"] .card-sheen::before {
+  background: linear-gradient(90deg, transparent, rgb(15 23 42 / 0.05), transparent);
+}
+
+/* React Flow dark overrides */
+.react-flow__attribution { display: none; }
+.react-flow__handle { transition: transform .2s; }
+.react-flow__handle:hover { transform: scale(1.35); }
+
+/* ── Reduced motion ───────────────────────────────────
+   Both the OS setting and the in-app toggle collapse animations to a
+   near-zero duration rather than removing them, so layout stays stable. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+html[data-motion="reduced"] *,
+html[data-motion="reduced"] *::before,
+html[data-motion="reduced"] *::after {
+  animation-duration: .01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .01ms !important;
+}

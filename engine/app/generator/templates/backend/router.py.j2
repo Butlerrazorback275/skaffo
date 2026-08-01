@@ -1,0 +1,115 @@
+"""@@ e.class @@ REST endpoints."""
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+
+from app.core.database import get_db
+<% if auth != 'none' %>
+from app.core.deps import get_current_user
+<% endif %>
+from app.schemas.@@ e.snake @@ import (
+    @@ e.class @@Create, @@ e.class @@Out, @@ e.class @@Page, @@ e.class @@Update,
+)
+from app.services import @@ e.snake @@_service as service
+
+router = APIRouter(
+    prefix="/api/@@ e.plural @@",
+    tags=["@@ e.plural @@"],
+<% if auth != 'none' %>
+    dependencies=[Depends(get_current_user)],
+<% endif %>
+)
+
+<% set pk = e.pk.name if e.pk else 'id' %>
+<% set pktype = e.pk.py if e.pk else 'int' %>
+
+@router.get("", response_model=@@ e.class @@Page)
+def list_@@ e.plural @@(
+    db: Session = Depends(get_db),
+<% if e.opts.pagination %>
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=200),
+<% endif %>
+<% if e.opts.search and e.searchable %>
+    q: str | None = Query(None, description="Search across text fields"),
+<% endif %>
+<% if e.opts.sorting %>
+    sort: str | None = Query(None, description="Field name, prefix with - for desc"),
+<% endif %>
+):
+    """List @@ e.plural @@."""
+<% if not e.opts.pagination %>
+    page, size = 1, 200
+<% endif %>
+    items, total = service.list_items(
+        db,
+        offset=(page - 1) * size,
+        limit=size,
+<% if e.opts.search and e.searchable %>
+        q=q,
+<% else %>
+        q=None,
+<% endif %>
+<% if e.opts.sorting %>
+        sort=sort,
+<% else %>
+        sort=None,
+<% endif %>
+    )
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "size": size,
+        "pages": (total + size - 1) // size if size else 0,
+    }
+
+
+@router.post("", response_model=@@ e.class @@Out, status_code=status.HTTP_201_CREATED)
+def create_@@ e.singular @@(payload: @@ e.class @@Create, db: Session = Depends(get_db)):
+    """Create a @@ e.singular @@."""
+    return service.create(db, payload)
+
+
+@router.get("/{item_id}", response_model=@@ e.class @@Out)
+def get_@@ e.singular @@(item_id: @@ pktype @@, db: Session = Depends(get_db)):
+    """Get one @@ e.singular @@ by @@ pk @@."""
+    obj = service.get(db, item_id)
+    if not obj:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "@@ e.class @@ not found")
+    return obj
+
+
+@router.put("/{item_id}", response_model=@@ e.class @@Out)
+def replace_@@ e.singular @@(
+    item_id: @@ pktype @@, payload: @@ e.class @@Create, db: Session = Depends(get_db)
+):
+    """Replace a @@ e.singular @@."""
+    obj = service.get(db, item_id)
+    if not obj:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "@@ e.class @@ not found")
+    return service.replace(db, obj, payload)
+
+
+@router.patch("/{item_id}", response_model=@@ e.class @@Out)
+def update_@@ e.singular @@(
+    item_id: @@ pktype @@, payload: @@ e.class @@Update, db: Session = Depends(get_db)
+):
+    """Partially update a @@ e.singular @@."""
+    obj = service.get(db, item_id)
+    if not obj:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "@@ e.class @@ not found")
+    return service.update(db, obj, payload)
+
+
+@router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_@@ e.singular @@(item_id: @@ pktype @@, db: Session = Depends(get_db)):
+    """Delete a @@ e.singular @@."""
+    obj = service.get(db, item_id)
+    if not obj:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "@@ e.class @@ not found")
+    service.delete(db, obj)
+
+
+# skaffo:keep:start @@ e.snake @@-router
+# Extra endpoints for this entity.
+# skaffo:keep:end

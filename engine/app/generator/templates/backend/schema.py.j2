@@ -1,0 +1,46 @@
+"""@@ e.class @@ Pydantic schemas."""
+<% if e.needs_datetime %>
+from datetime import datetime, date  # noqa: F401
+<% endif %>
+<% if e.needs_decimal %>
+from decimal import Decimal  # noqa: F401
+<% endif %>
+from pydantic import BaseModel, ConfigDict
+
+
+class @@ e.class @@Base(BaseModel):
+<% for c in e.writable %>
+    @@ c.name @@: @@ c.ann_opt @@
+<% endfor %>
+<% if not e.writable %>
+    pass
+<% endif %>
+
+
+class @@ e.class @@Create(@@ e.class @@Base):
+    pass
+
+
+class @@ e.class @@Update(BaseModel):
+<% for c in e.writable %>
+    @@ c.name @@: @@ c.py @@ | None = None
+<% endfor %>
+<% if not e.writable %>
+    pass
+<% endif %>
+
+
+class @@ e.class @@Out(@@ e.class @@Base):
+    model_config = ConfigDict(from_attributes=True)
+
+<% if e.pk %>
+    @@ e.pk.name @@: @@ e.pk.py @@
+<% endif %>
+
+
+class @@ e.class @@Page(BaseModel):
+    items: list[@@ e.class @@Out]
+    total: int
+    page: int
+    size: int
+    pages: int
