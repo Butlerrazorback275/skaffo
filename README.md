@@ -17,6 +17,19 @@ and pytest tests that pass.
 
 ## ▶️ Run it
 
+### Install (Windows)
+
+Download **`Skaffo-Setup.exe`** from the
+[latest release](https://github.com/ilia-dev-cmyk/skaffo/releases) and run it.
+Python and Node are **not** required — the engine ships inside the installer.
+
+> Skaffo is not code-signed (a certificate costs money and this is free), so
+> Windows SmartScreen shows *"Windows protected your PC"* the first time.
+> Click **More info → Run anyway**. You can verify what you are running:
+> the whole source is in this repository.
+
+### Or run from source
+
 **Requirements:** [Node.js 18+](https://nodejs.org) and [Python 3.10+](https://python.org)
 (on Windows, tick *"Add Python to PATH"* during install).
 
@@ -41,6 +54,9 @@ Other scripts:
 | `npm run engine` | Python API only — docs at http://127.0.0.1:8731/docs |
 | `npm run build` | Type-check + production bundle into `dist/` |
 | `npm run electron` | Launch Electron against the built `dist/` |
+| `npm run dist` | Build the Windows installer into `release/` |
+| `npm run build:engine` | Freeze the Python engine into one executable |
+| `npm run build:icon` | Regenerate the icon set from `build/icon.svg` |
 
 ### Running the tests
 
@@ -58,6 +74,17 @@ cd engine
 
 ```bash
 node scripts/test-github.cjs    # GitHub publishing, against a fake API
+```
+
+There is also a full end-to-end audit that launches the real app against a
+scratch data directory and clicks through every screen — 77 checks covering
+the empty first run, the wizard, the designer canvas, DDL for all three
+dialects, OpenAPI, dry-run containment, seed-data quality, the publish
+dialog, all four themes, RTL, persistence across restart, and delete:
+
+```bash
+xvfb-run -a node_modules/.bin/electron scripts/audit.cjs   # Linux/CI
+node_modules\.bin\electron scripts\audit.cjs              # Windows
 ```
 
 > If you see `The system cannot find the path specified`, the virtualenv does
@@ -95,6 +122,8 @@ Everything below is implemented, tested and shipping — **not planned, not stub
 | **Languages** | 8 locales (en · fa · ar · es · de · fr · tr · zh) with real RTL layout |
 | **Accessibility** | Reduce-motion toggle, keyboard-only focus rings |
 | **Persistence** | FastAPI sidecar + SQLite, auto-spawned by Electron — nothing is in-memory |
+| **Empty by default** | No sample project is installed; every counter starts at zero and only shows your own work |
+| **One-file install** | The Windows installer bundles the Python engine — users need neither Python nor Node |
 
 **Quality:** 286 passing Python tests · TypeScript clean (`tsc --noEmit`) ·
 zero console errors in a headless Electron run · 65 KB initial JS bundle (20 KB gzipped).
@@ -183,6 +212,11 @@ parsed with `ast`. Both issues were reported by a user reading the source.
 
 ## 📸 Screens
 
+**Skaffo starts empty.** No sample project, no fake numbers — the workspace is
+yours from the first launch.
+
+![First run](docs/screenshots/00-empty-dashboard.png)
+
 **Database Designer** — drag tables, drag-to-connect foreign keys, live validation.
 
 ![Database Designer](docs/screenshots/06-database-inspector.png)
@@ -217,10 +251,12 @@ parsed with `ast`. Both issues were reported by a user reading the source.
 - [x] **v0.7** — 4 themes · 8 languages · RTL · code-split bundle
 - [x] **v0.9** — Renamed to Skaffo · everything free · Support page
 - [x] **v0.9.1** — Injection hardening (SECURITY-002 / 003)
-- [x] **v0.10** — Sample data · publish to GitHub ← **you are here**
-- [ ] **v1.0** — Windows installer · app icon · onboarding · auto-update
+- [x] **v0.10** — Sample data · publish to GitHub · empty first run
+- [x] **v1.0** — Windows installer · app icon · first-run welcome ← **you are here**
+- [ ] **v1.1** — Auto-update · command palette · in-app editor
 
 Decisions and risks behind this order: [`docs/REVIEW.md`](docs/REVIEW.md).
+How releases are built and verified: [`docs/RELEASE.md`](docs/RELEASE.md).
 
 ---
 

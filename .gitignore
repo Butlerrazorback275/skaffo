@@ -33,3 +33,9 @@ __pycache__/
 .DS_Store
 Thumbs.db
 *.log
+
+# v1.0 build output
+release/
+engine/dist/
+engine/build/
+engine/*.spec

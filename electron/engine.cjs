@@ -37,10 +37,41 @@ function resolveInterpreter(rootDir) {
   return { cmd: win ? 'python' : 'python3', args: ['-m', 'app.main'], bundled: false };
 }
 
+/**
+ * Find the engine inside a packaged build.
+ *
+ * Two shapes are supported, checked in this order:
+ *
+ *   1. A frozen single executable (PyInstaller) at
+ *      `resources/engine/skaffo-engine.exe`. Preferred: one file, no
+ *      interpreter for the user to install.
+ *
+ *   2. An embedded CPython at `resources/python/python.exe` running the
+ *      engine sources from `resources/engine/`. Used when freezing is not
+ *      practical, and keeps the Python readable for anyone who wants to look.
+ *
+ * Returning null means "not packaged" and the caller falls back to a dev venv.
+ */
 function resolveBundled(resourcesPath) {
-  const exe = process.platform === 'win32' ? 'skaffo-engine.exe' : 'skaffo-engine';
-  const p = path.join(resourcesPath, 'engine', exe);
-  return fs.existsSync(p) ? { cmd: p, args: [], bundled: true } : null;
+  if (!resourcesPath) return null;
+  const win = process.platform === 'win32';
+
+  const frozen = path.join(resourcesPath, 'engine',
+    win ? 'skaffo-engine.exe' : 'skaffo-engine');
+  if (fs.existsSync(frozen)) return { cmd: frozen, args: [], bundled: true };
+
+  const embedded = path.join(resourcesPath, 'python', win ? 'python.exe' : 'bin/python3');
+  const sources = path.join(resourcesPath, 'engine', 'app', 'main.py');
+  if (fs.existsSync(embedded) && fs.existsSync(sources)) {
+    return {
+      cmd: embedded,
+      args: ['-m', 'app.main'],
+      bundled: true,
+      cwd: path.join(resourcesPath, 'engine'),
+    };
+  }
+
+  return null;
 }
 
 /**
@@ -79,7 +110,10 @@ async function startEngine({ isDev, rootDir, resourcesPath, onLog }) {
   chosenPort = await findFreePort();
 
   const target = (!isDev && resolveBundled(resourcesPath)) || resolveInterpreter(rootDir);
-  const cwd = target.bundled ? path.dirname(target.cmd) : path.join(rootDir, 'engine');
+  // The embedded-CPython layout needs cwd on the sources, not on python.exe,
+  // so `-m app.main` resolves; resolveBundled says so explicitly when it does.
+  const cwd = target.cwd
+    || (target.bundled ? path.dirname(target.cmd) : path.join(rootDir, 'engine'));
 
   onLog?.(`[engine] ${target.cmd} (port ${chosenPort})`);
 

@@ -24,12 +24,14 @@ export interface Settings {
   defaultDatabase: ProjectStack['database'];
   workspace: string;
   checkUpdates: boolean;
+  /** First-run welcome has been dismissed. Persisted so it shows once. */
+  welcomeSeen: boolean;
 }
 
 const DEFAULT_SETTINGS: Settings = {
   theme: 'dark', language: 'en', accent: '#6366F1', autoSave: true, reduceMotion: false,
   defaultBackend: 'fastapi', defaultFrontend: 'react', defaultDatabase: 'sqlite',
-  workspace: '~/Projects', checkUpdates: true,
+  workspace: '~/Projects', checkUpdates: true, welcomeSeen: false,
 };
 
 interface State {

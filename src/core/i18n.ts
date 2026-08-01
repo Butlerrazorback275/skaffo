@@ -97,6 +97,8 @@ const en: Dict = {
   'dash.build': 'Build',
   'dash.recentProjects': 'Recent Projects',
   'dash.viewAll': 'View all',
+  'dash.firstProject': 'No projects yet',
+  'dash.firstProjectHint': 'Skaffo starts empty on purpose — nothing here but your own work. Create a project to design a schema and generate the code.',
   'dash.statistics': 'Project Statistics',
   'dash.activity': 'Recent Activity',
   'dash.pinned': 'Pinned Projects',
@@ -228,6 +230,8 @@ const fa: Dict = {
   'dash.noExports': 'هنوز خروجی گرفته نشده.', 'dash.noBuilds': 'هنوز بیلدی انجام نشده.',
   'projects.title': 'پروژه‌ها', 'projects.count': 'پروژه در فضای کاری شما',
   'projects.new': 'پروژهٔ جدید', 'projects.empty': 'هنوز پروژه‌ای نیست',
+  'dash.firstProject': 'هنوز پروژه‌ای نیست',
+  'dash.firstProjectHint': "اسکافو عمداً خالی شروع می‌شود؛ اینجا فقط کار خودتان است. برای طراحی اسکیما و تولید کد یک پروژه بسازید.",
   'projects.emptyHint': 'اولین پروژه‌تان را بسازید.', 'projects.noMatch': 'موردی یافت نشد',
   'projects.updated': 'به‌روزرسانی', 'projects.sample': 'نمونه',
   'projects.sampleHint': 'برای اینکه اپ در اولین اجرا خالی نباشد ساخته شده — هر وقت خواستید حذفش کنید.', 'projects.built': 'بیلد',
@@ -285,6 +289,8 @@ const ar: Dict = {
   'dash.noBuilds': 'لا توجد عمليات بناء.',
   'projects.title': 'المشاريع', 'projects.count': 'مشروع في مساحة العمل',
   'projects.new': 'مشروع جديد', 'projects.sample': 'عينة', 'projects.empty': 'لا توجد مشاريع',
+  'dash.firstProject': 'لا توجد مشاريع بعد',
+  'dash.firstProjectHint': "يبدأ Skaffo فارغًا عن قصد — لا شيء هنا سوى عملك. أنشئ مشروعًا لتصميم المخطط وتوليد الشيفرة.",
   'projects.emptyHint': 'أنشئ مشروعك الأول للبدء.', 'projects.noMatch': 'لا توجد نتائج',
   'settings.title': 'الإعدادات', 'settings.appearance': 'المظهر', 'settings.theme': 'السمة',
   'settings.language': 'اللغة', 'settings.accent': 'اللون الأساسي',
@@ -298,6 +304,8 @@ const ar: Dict = {
 };
 
 const es: Dict = {
+  'dash.firstProject': 'Aún no hay proyectos',
+  'dash.firstProjectHint': "Skaffo empieza vacío a propósito: aquí solo está tu trabajo. Crea un proyecto para diseñar un esquema y generar el código.",
   'nav.dashboard': 'Panel', 'nav.projects': 'Proyectos', 'nav.templates': 'Plantillas',
   'nav.database': 'Base de datos', 'nav.api': 'API', 'nav.export': 'Exportar',
   'nav.settings': 'Ajustes', 'nav.openSource': 'Código abierto', 'nav.freeForever': 'Gratis siempre',
@@ -324,6 +332,8 @@ const es: Dict = {
 };
 
 const de: Dict = {
+  'dash.firstProject': 'Noch keine Projekte',
+  'dash.firstProjectHint': "Skaffo startet bewusst leer — hier ist nur deine eigene Arbeit. Erstelle ein Projekt, um ein Schema zu entwerfen und Code zu generieren.",
   'nav.dashboard': 'Übersicht', 'nav.projects': 'Projekte', 'nav.templates': 'Vorlagen',
   'nav.database': 'Datenbank', 'nav.api': 'API', 'nav.export': 'Export',
   'nav.settings': 'Einstellungen', 'nav.openSource': 'Open Source', 'nav.freeForever': 'Für immer kostenlos',
@@ -348,6 +358,8 @@ const de: Dict = {
 };
 
 const fr: Dict = {
+  'dash.firstProject': "Aucun projet pour l'instant",
+  'dash.firstProjectHint': "Skaffo démarre vide volontairement — il n'y a ici que votre travail. Créez un projet pour concevoir un schéma et générer le code.",
   'nav.dashboard': 'Tableau de bord', 'nav.projects': 'Projets', 'nav.templates': 'Modèles',
   'nav.database': 'Base de données', 'nav.api': 'API', 'nav.export': 'Exporter',
   'nav.settings': 'Paramètres', 'nav.openSource': 'Open source', 'nav.freeForever': 'Gratuit pour toujours',
@@ -370,6 +382,8 @@ const fr: Dict = {
 };
 
 const tr: Dict = {
+  'dash.firstProject': 'Henüz proje yok',
+  'dash.firstProjectHint': "Skaffo bilerek boş başlar — burada yalnızca kendi çalışmanız var. Şema tasarlamak ve kod üretmek için bir proje oluşturun.",
   'nav.dashboard': 'Panel', 'nav.projects': 'Projeler', 'nav.templates': 'Şablonlar',
   'nav.database': 'Veritabanı', 'nav.api': 'API', 'nav.export': 'Dışa Aktar',
   'nav.settings': 'Ayarlar', 'nav.openSource': 'Açık kaynak', 'nav.freeForever': 'Sonsuza dek ücretsiz',
@@ -392,6 +406,8 @@ const tr: Dict = {
 };
 
 const zh: Dict = {
+  'dash.firstProject': '还没有项目',
+  'dash.firstProjectHint': "Skaffo 有意从空白开始——这里只有你自己的工作。创建一个项目来设计数据库结构并生成代码。",
   'nav.dashboard': '仪表板', 'nav.projects': '项目', 'nav.templates': '模板',
   'nav.database': '数据库', 'nav.api': 'API', 'nav.export': '导出', 'nav.settings': '设置',
   'nav.openSource': '开源', 'nav.freeForever': '永久免费', 'nav.support': '支持项目', 'common.copy': '复制',

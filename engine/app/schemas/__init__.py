@@ -234,3 +234,4 @@ class SettingsOut(Base):
     defaultDatabase: str = "sqlite"
     workspace: str = "~/Projects"
     checkUpdates: bool = True
+    welcomeSeen: bool = False

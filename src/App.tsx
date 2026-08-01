@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CheckCircle2, AlertCircle, Info } from 'lucide-react';
 import '@plugins/index';
@@ -6,6 +6,7 @@ import { useStore } from '@core/store';
 import Sidebar from '@ui/Sidebar';
 import Topbar from '@ui/Topbar';
 import BootGate from '@ui/BootGate';
+const Welcome = lazy(() => import('@ui/Welcome'));
 import Dashboard from '@plugins/dashboard/Dashboard';
 import Projects from '@plugins/projects/Projects';
 
@@ -68,9 +69,34 @@ function Toast() {
 export default function App() {
   const route = useStore((s) => s.route);
   const wizardOpen = useStore((s) => s.wizardOpen);
+  const settings = useStore((s) => s.settings);
+  const setSetting = useStore((s) => s.setSetting);
+  const booted = useStore((s) => s.booted);
   const Page = PAGES[route];
 
+  // Show the welcome once. Gated on `booted` so it never flashes before
+  // settings have loaded — otherwise a returning user sees it for a frame
+  // every single launch.
+  const [showWelcome, setShowWelcome] = useState(false);
+  useEffect(() => {
+    if (booted && !settings.welcomeSeen) setShowWelcome(true);
+  }, [booted, settings.welcomeSeen]);
+
+  const dismissWelcome = () => {
+    setShowWelcome(false);
+    setSetting('welcomeSeen', true);
+  };
+
   return (
+    <>
+    {/* Outside BootGate on purpose: BootGate returns early while the engine
+        is starting, so anything nested inside it is unmounted until then and
+        a child's effect never sees the boot complete. */}
+    {showWelcome && (
+      <Suspense fallback={null}>
+        <Welcome onDone={dismissWelcome} />
+      </Suspense>
+    )}
     <BootGate>
     <div className="flex h-screen flex-col overflow-hidden bg-bg text-txt antialiased">
       {/* ambient glow */}
@@ -109,5 +135,6 @@ export default function App() {
       <Toast />
     </div>
     </BootGate>
+    </>
   );
 }

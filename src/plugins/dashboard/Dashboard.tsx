@@ -43,6 +43,10 @@ export default function Dashboard() {
 
   const pinned = projects.filter((p) => p.pinned);
   const recent = [...projects].sort((a, b) => +new Date(b.updatedAt) - +new Date(a.updatedAt)).slice(0, 5);
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const buildsThisWeek = activity.filter(
+    (a) => a.kind === 'build' && +new Date(a.at) >= weekAgo,
+  ).length;
   const totalFiles = projects.reduce((a, p) => a + p.fileCount, 0);
   const totalLoc = projects.reduce((a, p) => a + p.linesOfCode, 0);
   const lastExport = [...projects].filter((p) => p.lastExportAt)
@@ -91,14 +95,30 @@ export default function Dashboard() {
             <Stat icon={Layers}     label={t("nav.projects")} value={projects.length} sub={`${pinned.length} pinned`} tone="bg-primary/15 text-indigo-300" />
             <Stat icon={FileCode}   label={t("common.files")}    value={totalFiles} sub="generated" tone="bg-emerald-500/15 text-emerald-300" />
             <Stat icon={Code2}      label="Lines"    value={`${(totalLoc / 1000).toFixed(1)}k`} sub="of code" tone="bg-violet-500/15 text-violet-300" />
-            <Stat icon={TrendingUp} label="This week" value="3" sub="builds" tone="bg-amber-500/15 text-amber-300" />
+            {/* Was hardcoded to "3" — a made-up number that is obvious the
+                moment the workspace is empty. Count real build activity. */}
+            <Stat icon={TrendingUp} label="This week" value={buildsThisWeek} sub="builds" tone="bg-amber-500/15 text-amber-300" />
           </div>
         )}
 
         <div>
-          <SectionTitle right={<button onClick={() => go('projects')} className="text-[12px] text-indigo-300 transition hover:text-hover">{t('dash.viewAll')}</button>}>
+          <SectionTitle right={projects.length > 0 && <button onClick={() => go('projects')} className="text-[12px] text-indigo-300 transition hover:text-hover">{t('dash.viewAll')}</button>}>
             {t('dash.recentProjects')}
           </SectionTitle>
+          {projects.length === 0 ? (
+            /* Skaffo ships with no sample project, so this is the very first
+               thing a new user sees. It has to say what to do next. */
+            <Card className="flex flex-col items-center gap-3 py-12 text-center">
+              <div className="grid h-14 w-14 place-items-center rounded-2xl border border-line bg-raise text-muted">
+                <Layers size={22} />
+              </div>
+              <div>
+                <p className="text-[15px] font-semibold text-txt">{t('dash.firstProject')}</p>
+                <p className="mx-auto mt-1 max-w-sm text-[13px] text-muted">{t('dash.firstProjectHint')}</p>
+              </div>
+              <Button onClick={() => setWizard(true)}><Plus size={16} /> {t('dash.createProject')}</Button>
+            </Card>
+          ) : (
           <div className="space-y-2">
             {recent.map((p, i) => (
               <motion.div key={p.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: i * 0.04 }}>
@@ -124,6 +144,7 @@ export default function Dashboard() {
               </motion.div>
             ))}
           </div>
+          )}
         </div>
       </div>
 
