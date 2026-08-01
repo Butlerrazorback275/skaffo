@@ -44,3 +44,6 @@ release/
 engine/dist/
 engine/build/
 engine/*.spec
+
+# demo capture scratch (the built demo.gif/mp4 in docs/ IS committed)
+demo-frames/

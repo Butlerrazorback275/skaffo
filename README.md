@@ -11,7 +11,9 @@ and pytest tests that pass.
 >
 > Formerly *CodeForge Studio*; renamed to **Skaffo** in v0.8.
 
-![Dashboard](docs/screenshots/01-dashboard.png)
+![Skaffo in 30 seconds](docs/demo.gif)
+
+<sub>Real screen capture, no edits — schema to 69 generated files.</sub>
 
 ---
 
@@ -235,8 +237,10 @@ yours from the first launch.
 | **Persian** — the whole layout mirrors | **RTL canvas** — the diagram stays LTR |
 | ![Templates](docs/screenshots/04-templates.png) | ![Support](docs/screenshots/17-support.png) |
 | **Templates** | **Support** — optional, nothing is gated |
-| ![Sample data](docs/screenshots/18-wizard-seed.png) | ![Publish to GitHub](docs/screenshots/20-publish-dialog.png) |
-| **Sample data** — on by default | **Publish** — token stays in the OS keychain |
+| ![Dashboard](docs/screenshots/01-dashboard.png) | ![Sample data](docs/screenshots/18-wizard-seed.png) |
+| **Dashboard** | **Sample data** — on by default |
+| ![Publish to GitHub](docs/screenshots/20-publish-dialog.png) | ![Export diff](docs/screenshots/12-export-diff.png) |
+| **Publish** — token stays in the OS keychain | **Dry run** — see every change before writing |
 
 ---
 
