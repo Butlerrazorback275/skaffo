@@ -1,9 +1,13 @@
 # 🚀 Skaffo
 
-**The fastest way to start any software project.**
+**Design your database and API visually — get a real, runnable FastAPI + React project.**
 
-> **Free and open source.** Every feature is unlocked — no paid tier, no
-> account, no telemetry. Your projects never leave your machine.
+Not a mockup generator. Skaffo writes actual source code to disk: SQLAlchemy models,
+Pydantic schemas, FastAPI routers, Alembic migrations, a React + TypeScript frontend,
+and pytest tests that pass.
+
+> **Free and open source.** Every feature is unlocked — no paid tier, no account,
+> no telemetry. Your projects never leave your machine.
 >
 > Formerly *CodeForge Studio*; renamed to **Skaffo** in v0.8.
 
@@ -42,20 +46,27 @@ Other scripts:
 
 ## ✅ What works right now
 
-Everything below is **real, clickable UI** running on in-memory state:
+Everything below is implemented, tested and shipping — **not planned, not stubbed.**
 
-| Screen | Status |
+| Area | What you get |
 |---|---|
-| **Dashboard** | 3-column layout, live stats, recent projects, activity feed, pinned, latest export/build |
-| **Projects** | Grid, search, pin/unpin, delete, open |
-| **Templates** | 6 local templates, marketplace placeholder |
-| **Database Designer** | React Flow canvas, drag tables, PK/FK icons, drag-to-connect relations, column inspector (type, nullable, unique, default), rename/duplicate/delete |
-| **API Designer** | Entity list from schema, Generate CRUD, endpoint list, query-feature toggles, live code preview |
-| **Export** | 5 formats, animated progress, expandable output tree |
-| **Settings** | Theme, language, accent, defaults, backup/restore, live plugin list |
-| **Wizard** | All 8 steps, stepper rail, validation, summary, Generate → creates project in state |
+| **Database Designer** | React Flow canvas, drag tables, PK/FK icons, drag-to-connect relations, column inspector (type, nullable, unique, default), rename / duplicate / delete |
+| **Validation** | 20 rules, including relation cycle detection, orphan FKs and duplicate names |
+| **SQL export** | SQLite · PostgreSQL · MySQL DDL, topologically sorted so it runs top-to-bottom |
+| **Schema import** | Read an existing `.db` file, or paste raw `CREATE TABLE` SQL |
+| **Undo / Redo** | Full schema snapshots, `Ctrl+Z` / `Ctrl+Shift+Z`, written back atomically |
+| **API Designer** | CRUD generation per entity, custom endpoint editor, query-feature toggles, live code preview |
+| **OpenAPI 3.1** | Live spec preview, validated against the official `openapi-spec-validator` |
+| **Project Generator** | Real FastAPI + React project on disk — models, schemas, routers, Alembic migrations, tests, `run.bat` / `run.sh` |
+| **Re-generate / Sync** | Protected regions (`skaffo:keep`) survive regeneration; conflicts are reported, never silently overwritten |
+| **Export** | Write to folder or real ZIP (deflate), **dry run**, per-file diffs, export report, Open Folder |
+| **Themes** | Dark · Light · Midnight · Nord, all via CSS variables |
+| **Languages** | 8 locales (en · fa · ar · es · de · fr · tr · zh) with real RTL layout |
+| **Accessibility** | Reduce-motion toggle, keyboard-only focus rings |
+| **Persistence** | FastAPI sidecar + SQLite, auto-spawned by Electron — nothing is in-memory |
 
-Verified in a headless Electron run: **all 12 screens render, 0 console errors.**
+**Quality:** 120 passing Python tests · TypeScript clean (`tsc --noEmit`) ·
+zero console errors in a headless Electron run · 65 KB initial JS bundle (20 KB gzipped).
 
 ---
 
@@ -68,8 +79,10 @@ src/
 ├─ core/                  ← the only shared layer
 │  ├─ types.ts            Schema, Project, Plugin contract
 │  ├─ registry.ts         PluginRegistry + event bus
-│  ├─ store.ts            Zustand — single source of truth
-│  └─ mock.ts             Phase-1 fixtures (deleted in Phase 2)
+│  ├─ store.ts            Zustand — single source of truth, undo/redo
+│  ├─ api.ts              typed client for the Python engine
+│  ├─ theme.ts            4 themes as CSS variables
+│  └─ i18n.ts             8 locales + RTL
 ├─ ui/                    design system (Card, Button, Sidebar, Topbar…)
 ├─ plugins/               ← every feature is a plugin
 │  ├─ dashboard/
@@ -79,12 +92,21 @@ src/
 │  ├─ api/                API Designer
 │  ├─ export/             Export Engine
 │  ├─ settings/
+│  ├─ support/
 │  ├─ wizard/
 │  └─ index.ts            registration only
-└─ App.tsx                shell + router
+└─ App.tsx                shell + lazy router
+
 electron/
 ├─ main.cjs               window, IPC, custom titlebar
-└─ preload.cjs            contextBridge — no nodeIntegration
+├─ preload.cjs            contextBridge — no nodeIntegration
+└─ engine.cjs             spawns the Python sidecar, kills orphans, finds a free port
+
+engine/                   FastAPI + SQLAlchemy + SQLite
+├─ app/routers/           projects · schema · schema_tools · api_design · generate
+├─ app/services/          validate · ddl · openapi_spec · export · serialize
+├─ app/generator/         pure generators + 50 Jinja templates
+└─ tests/                 120 tests
 ```
 
 **The contract every generator must satisfy:**
@@ -97,10 +119,54 @@ interface SkaffoPlugin {
 }
 ```
 
-A plugin is a **pure function**: context in, `GeneratedFile[]` out. It never touches disk.
+A generator is a **pure function**: context in, `GeneratedFile[]` out. It never touches disk.
 Only the Export Engine writes files — which is why preview, dry-run and ZIP come for free.
 
 No plugin imports another plugin. They only know `@core`.
+
+---
+
+## 🔒 Security
+
+Table and column names can come from imported databases, so they are treated as
+untrusted input. Path traversal is blocked at four layers: identifier sanitising,
+`GeneratedFile` construction, containment checks in the writer, and a
+forbidden-target guard. 24 regression tests cover it — see
+[`docs/SECURITY-FIX-001.md`](docs/SECURITY-FIX-001.md).
+
+---
+
+## 📸 Screens
+
+| | |
+|---|---|
+| ![Database](docs/screenshots/06-database-inspector.png) | ![API](docs/screenshots/07-api.png) |
+| ![OpenAPI](docs/screenshots/19-phase5-openapi.png) | ![Diff](docs/screenshots/23-phase6-diff.png) |
+| ![Light theme](docs/screenshots/24-theme-light.png) | ![Nord theme](docs/screenshots/25-theme-nord.png) |
+| ![RTL Persian](docs/screenshots/26-rtl-persian.png) | ![Export](docs/screenshots/22-phase6-export.png) |
+
+---
+
+## 🗺 Build order
+
+- [x] **Phase 1** — Electron + React shell, all screens
+- [x] **Phase 2** — FastAPI sidecar + SQLite persistence
+- [x] **Phase 3** — Project Generator + **Re-generate / Sync**
+- [x] **Phase 4** — Validation · SQL export · Import · Undo/Redo
+- [x] **Phase 5** — Custom endpoints · OpenAPI · generated tests
+- [x] **Phase 6** — ZIP · dry run · diffs · run scripts
+- [x] **v0.7** — 4 themes · 8 languages · RTL · code-split bundle
+- [x] **v0.9** — Renamed to Skaffo · everything free · Support page ← **you are here**
+- [ ] **v1.0** — Windows installer · app icon · onboarding · auto-update
+
+Decisions and risks behind this order: [`docs/REVIEW.md`](docs/REVIEW.md).
+
+---
+
+## 🔒 Locked into v1 scope
+
+FastAPI · React · SQLite. Every other stack option is visible but marked *Soon* —
+deliberately. One stack done properly beats eight done halfway.
 
 ---
 
@@ -117,45 +183,22 @@ No plugin imports another plugin. They only know `@core`.
 | Card | `#1E293B` |
 | Text | `#F8FAFC` |
 
-Font **Inter** (+ JetBrains Mono for code) · Icons **Lucide React** · Animations fade / slide / scale @ **200ms** · Dark mode + glass effect throughout.
+Font **Inter** (+ JetBrains Mono for code) · Icons **Lucide React** ·
+Animations fade / slide / scale @ **200ms** · every colour is a CSS variable, so
+themes swap with no re-render.
 
 ---
 
-## 📸 Screens
+## 💬 Questions, bugs, ideas
 
-| | |
-|---|---|
-| ![Projects](docs/screenshots/03-projects.png) | ![Templates](docs/screenshots/04-templates.png) |
-| ![Database](docs/screenshots/06-database-inspector.png) | ![API](docs/screenshots/07-api.png) |
-| ![Export](docs/screenshots/08-export.png) | ![Settings](docs/screenshots/09-settings.png) |
-| ![Wizard 1](docs/screenshots/10-wizard-step1.png) | ![Summary](docs/screenshots/12-wizard-summary.png) |
-
----
-
-## 🗺 Build order
-
-- [x] **Phase 1** — Electron + React shell, all screens
-- [x] **Phase 2** — FastAPI sidecar + SQLite persistence
-- [x] **Phase 3** — Project Generator + **Re-generate/Sync**
-- [x] **Phase 4** — Validation · SQL export · Import · Undo/Redo
-- [x] **Phase 5** — Custom endpoints · OpenAPI · generated tests
-- [x] **Phase 6** — ZIP · dry run · diffs · run scripts ← you are here
-- [ ] **v1.0** — Installer, icon, onboarding, auto-update
-
-Decisions and risks behind this order: [`docs/REVIEW.md`](docs/REVIEW.md).
-
----
-
-## 🔒 Locked into v1 scope
-
-FastAPI · React · SQLite. Every other stack option is visible but disabled — deliberately.
-One stack done properly beats eight done halfway.
+- 🐛 Something broken? [Open an issue](https://github.com/ilia-dev-cmyk/skaffo/issues)
+- 💡 Idea or question? [Start a discussion](https://github.com/ilia-dev-cmyk/skaffo/discussions)
 
 ---
 
 ## 📄 License
 
-MIT
+MIT — see [`LICENSE`](LICENSE).
 
 ---
 
@@ -166,4 +209,4 @@ Skaffo is free and stays free. If it saved you time:
 ⭐ Star the repo · 🐛 Report a bug · 🔗 Tell a friend
 
 Crypto donations are welcome but entirely optional — see
-[docs/SUPPORT.md](docs/SUPPORT.md).
+[`docs/SUPPORT.md`](docs/SUPPORT.md).
