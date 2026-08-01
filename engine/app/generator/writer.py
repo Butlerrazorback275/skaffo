@@ -41,6 +41,27 @@ def default_workspace() -> Path:
     return new
 
 
+def _under_workspace(tail: str, slug: str) -> Path:
+    """Join a workspace-relative tail, refusing to leave the workspace.
+
+    SECURITY-003. ``~/Projects/<tail>`` is the UI's own notation for "inside
+    the managed workspace", so the tail is untrusted and must not be able to
+    climb out of it with ``..``. ``Path.__truediv__`` happily builds
+    ``.../SkaffoProjects/../../../tmp``; only resolving and re-checking
+    catches that.
+    """
+    ws = default_workspace().resolve()
+    candidate = (ws / tail).resolve() if tail else ws / slug
+
+    try:
+        candidate.relative_to(ws)
+    except ValueError:
+        # The tail escaped. Fall back to the hardened slug rather than
+        # silently writing somewhere the user never chose.
+        return ws / slug
+    return candidate
+
+
 def resolve_target(raw: str | None, slug: str) -> Path:
     """Expand a stored project path into a real absolute directory."""
     if not raw or raw.strip() in ("", "~", "~/Projects", "~/Projects/"):
@@ -51,10 +72,10 @@ def resolve_target(raw: str | None, slug: str) -> Path:
     # "~/Projects/foo" from the UI -> Documents/SkaffoProjects/foo
     if raw.strip().startswith("~/Projects"):
         tail = raw.strip()[len("~/Projects"):].strip("/\\")
-        return default_workspace() / (tail or slug)
+        return _under_workspace(tail, slug)
 
     if not p.is_absolute():
-        return default_workspace() / p
+        return _under_workspace(str(p), slug)
 
     return _guard_target(p)
 

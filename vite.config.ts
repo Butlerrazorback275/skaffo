@@ -1,9 +1,16 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
+import { createRequire } from 'node:module';
+
+// Single source of truth for the version shown in the UI. It used to be
+// hardcoded in Topbar.tsx and silently sat at "v0.1.0 · Preview" for six
+// releases; injecting it here means it can never drift from package.json.
+const { version } = createRequire(import.meta.url)('./package.json');
 
 export default defineConfig({
   plugins: [react()],
+  define: { __APP_VERSION__: JSON.stringify(version) },
   base: './',
   root: '.',
   server: { port: 5273, strictPort: true },

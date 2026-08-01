@@ -42,7 +42,7 @@ export default function Topbar() {
         </div>
         <div className="leading-tight">
           <p className="text-[14.5px] font-semibold tracking-[-0.02em] text-txt">Skaffo</p>
-          <p className="text-[10px] text-muted">v0.1.0 · Preview</p>
+          <p className="text-[10px] text-muted">v{__APP_VERSION__}</p>
         </div>
       </div>
 

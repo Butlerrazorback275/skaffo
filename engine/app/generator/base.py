@@ -14,6 +14,8 @@ from typing import Protocol
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
+from .escaping import flatten, register_filters
+
 TEMPLATE_ROOT = Path(__file__).parent / "templates"
 
 # ── identifier hardening ─────────────────────────────────
@@ -58,6 +60,28 @@ def safe_identifier(raw: str, *, fallback: str = "table") -> str:
     return name
 
 
+def project_slug(raw: str) -> str:
+    """Reduce a project display name to a single safe directory segment.
+
+    SECURITY-003. This is the *one* definition of a project slug. It used to
+    be duplicated in ``routers/projects.py`` as a bare
+    ``name.lower().replace(" ", "-")``, which preserved ``/`` and ``..`` — so
+    a project named ``../../../tmp/x`` was stored as
+    ``~/Projects/../../../tmp/x`` and the export wrote outside the workspace.
+
+        "My Shop"              -> "my-shop"
+        "../../../tmp/x"       -> "tmp-x"
+        "My Shop$(id)"         -> "my-shop-id"
+        "..";  ""              -> "project"
+    """
+    cleaned = re.sub(r"[^0-9a-zA-Z_-]+", "-", str(raw).strip().lower())
+    cleaned = cleaned.strip("-._")
+    # A slug is a single path segment: never a separator, never a traversal.
+    if not cleaned or set(cleaned) <= {"-", ".", "_"}:
+        return "project"
+    return cleaned
+
+
 def safe_relpath(path: str) -> str:
     """Validate a generated file path stays relative and contained."""
     p = str(path).replace("\\", "/").strip()
@@ -96,9 +120,7 @@ class GenContext:
     @property
     def slug(self) -> str:
         """Directory-safe project slug (never traverses)."""
-        raw = self.project["name"].strip().lower().replace(" ", "-")
-        cleaned = re.sub(r"[^0-9a-zA-Z_-]+", "-", raw).strip("-.")
-        return cleaned or "project"
+        return project_slug(self.project["name"])
 
     @property
     def snake(self) -> str:
@@ -149,6 +171,10 @@ def make_env(subdir: str) -> Environment:
     )(safe_identifier(s).split("_"))
     env.filters["snake"] = lambda s: safe_identifier(s)
     env.filters["singular"] = lambda s: str(s)[:-1] if str(s).endswith("s") else str(s)
+    # SECURITY-002: free-text values (the project display name) are not
+    # identifiers and never pass through safe_identifier. Templates must
+    # escape them for the language they are writing into.
+    register_filters(env)
     return env
 
 

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from .. import models, schemas
 from ..core.database import get_db
+from ..generator.base import project_slug
 from ..services.serialize import activity_out, project_out
 
 router = APIRouter(prefix="/api/projects", tags=["projects"])
@@ -34,7 +35,10 @@ def list_projects(db: Session = Depends(get_db)):
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_project(body: schemas.ProjectCreate, db: Session = Depends(get_db)):
-    slug = body.name.strip().lower().replace(" ", "-")
+    # SECURITY-003: one hardened definition of a slug, shared with the
+    # generator. A raw lower/replace kept '/' and '..' and escaped the
+    # workspace on export.
+    slug = project_slug(body.name)
     p = models.Project(
         name=body.name.strip(),
         description=body.description,

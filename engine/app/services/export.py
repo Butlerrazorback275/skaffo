@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from ..generator.base import GeneratedFile, UnsafeIdentifier, safe_relpath
+from ..generator.escaping import bat_echo, sh_str
 from ..generator.merge import Action, FilePlan
 
 # Never ship these, even if something odd ends up in the output list.
@@ -158,7 +159,7 @@ setlocal
 cd /d "%~dp0"
 
 echo ============================================
-echo  {name}
+echo  {bat_name}
 echo ============================================
 echo.
 
@@ -215,7 +216,7 @@ set -e
 cd "$(dirname "$0")"
 
 echo "============================================"
-echo " {name}"
+printf ' %s\n' {sh_name}
 echo "============================================"
 
 # ---------- backend ----------
@@ -250,11 +251,30 @@ wait
 
 
 def run_scripts(project_name: str) -> list[GeneratedFile]:
-    """A double-clickable launcher for the generated project."""
-    safe_name = str(project_name).replace("%", "").replace("^", "").replace("&", "")
+    """A double-clickable launcher for the generated project.
+
+    SECURITY-002 — the project's display name is free text ("My Shop"), so it
+    is deliberately never reduced by ``safe_identifier``. Interpolating it into
+    an *executable* script therefore needs per-language escaping:
+
+    * ``run.sh`` — the name is emitted as a shell single-quoted literal and
+      printed with ``printf`` rather than being spliced into a double-quoted
+      ``echo``. Inside double quotes ``$(...)`` and backticks are still
+      evaluated, which turned a project name into arbitrary command execution
+      every time the end user double-clicked the script.
+    * ``run.bat`` — cmd.exe has no safe quoting for ``echo``, so the name is
+      reduced to an allowlist of characters that are inert to the interpreter.
+
+    Both escapers first collapse newlines: a line break ends the statement in
+    either language, so no amount of character quoting alone is sufficient.
+    """
     return [
-        GeneratedFile("run.bat", RUN_BAT.replace("{name}", safe_name)),
-        GeneratedFile("run.sh", RUN_SH.replace("{name}", safe_name), executable=True),
+        GeneratedFile("run.bat", RUN_BAT.replace("{bat_name}", bat_echo(project_name))),
+        GeneratedFile(
+            "run.sh",
+            RUN_SH.replace("{sh_name}", sh_str(project_name)),
+            executable=True,
+        ),
     ]
 
 

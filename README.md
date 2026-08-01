@@ -65,7 +65,7 @@ Everything below is implemented, tested and shipping — **not planned, not stub
 | **Accessibility** | Reduce-motion toggle, keyboard-only focus rings |
 | **Persistence** | FastAPI sidecar + SQLite, auto-spawned by Electron — nothing is in-memory |
 
-**Quality:** 120 passing Python tests · TypeScript clean (`tsc --noEmit`) ·
+**Quality:** 207 passing Python tests · TypeScript clean (`tsc --noEmit`) ·
 zero console errors in a headless Electron run · 65 KB initial JS bundle (20 KB gzipped).
 
 ---
@@ -106,7 +106,7 @@ engine/                   FastAPI + SQLAlchemy + SQLite
 ├─ app/routers/           projects · schema · schema_tools · api_design · generate
 ├─ app/services/          validate · ddl · openapi_spec · export · serialize
 ├─ app/generator/         pure generators + 50 Jinja templates
-└─ tests/                 120 tests
+└─ tests/                 207 tests
 ```
 
 **The contract every generator must satisfy:**
@@ -128,22 +128,44 @@ No plugin imports another plugin. They only know `@core`.
 
 ## 🔒 Security
 
-Table and column names can come from imported databases, so they are treated as
-untrusted input. Path traversal is blocked at four layers: identifier sanitising,
-`GeneratedFile` construction, containment checks in the writer, and a
-forbidden-target guard. 24 regression tests cover it — see
-[`docs/SECURITY-FIX-001.md`](docs/SECURITY-FIX-001.md).
+Anything that reaches generated code is treated as untrusted input — table and
+column names can come from an imported database, and a project's display name
+is free text.
+
+- **Path traversal** is blocked at four layers: identifier sanitising,
+  `GeneratedFile` construction, containment checks in the writer, and a
+  forbidden-target guard — [`docs/SECURITY-FIX-001.md`](docs/SECURITY-FIX-001.md)
+- **Command / code injection** — the project name is escaped per destination
+  language (shell, batch, Python, HTML, JSX, Markdown) rather than by a
+  character blocklist, because a single "sanitised" string cannot be safe in
+  five grammars at once — [`docs/SECURITY-FIX-002.md`](docs/SECURITY-FIX-002.md)
+
+111 of the 207 tests are security regression tests, and they assert on
+behaviour: shell payloads are executed in a real `bash`, generated Python is
+parsed with `ast`. Both issues were reported by a user reading the source.
 
 ---
 
 ## 📸 Screens
 
+**Database Designer** — drag tables, drag-to-connect foreign keys, live validation.
+
+![Database Designer](docs/screenshots/06-database-inspector.png)
+
+**Export** — pick a format, dry-run it, see every file before anything is written.
+
+![Export](docs/screenshots/08-export.png)
+
 | | |
 |---|---|
-| ![Database](docs/screenshots/06-database-inspector.png) | ![API](docs/screenshots/07-api.png) |
-| ![OpenAPI](docs/screenshots/19-phase5-openapi.png) | ![Diff](docs/screenshots/23-phase6-diff.png) |
-| ![Light theme](docs/screenshots/24-theme-light.png) | ![Nord theme](docs/screenshots/25-theme-nord.png) |
-| ![RTL Persian](docs/screenshots/26-rtl-persian.png) | ![Export](docs/screenshots/22-phase6-export.png) |
+| ![API Designer](docs/screenshots/07-api.png) | ![OpenAPI 3.1](docs/screenshots/11-openapi.png) |
+| **API Designer** — CRUD + custom endpoints | **OpenAPI 3.1** — live, spec-validated |
+| ![Light theme](docs/screenshots/13-theme-light.png) | ![Nord theme](docs/screenshots/14-theme-nord.png) |
+| **Light** | **Nord** |
+| ![RTL Persian](docs/screenshots/15-rtl-persian.png) | ![RTL canvas](docs/screenshots/16-rtl-database.png) |
+| **Persian** — the whole layout mirrors | **RTL canvas** — the diagram stays LTR |
+| ![Templates](docs/screenshots/04-templates.png) | ![Support](docs/screenshots/17-support.png) |
+| **Templates** | **Support** — optional, nothing is gated |
 
 ---
 
@@ -156,7 +178,8 @@ forbidden-target guard. 24 regression tests cover it — see
 - [x] **Phase 5** — Custom endpoints · OpenAPI · generated tests
 - [x] **Phase 6** — ZIP · dry run · diffs · run scripts
 - [x] **v0.7** — 4 themes · 8 languages · RTL · code-split bundle
-- [x] **v0.9** — Renamed to Skaffo · everything free · Support page ← **you are here**
+- [x] **v0.9** — Renamed to Skaffo · everything free · Support page
+- [x] **v0.9.1** — Injection hardening (SECURITY-002 / 003) ← **you are here**
 - [ ] **v1.0** — Windows installer · app icon · onboarding · auto-update
 
 Decisions and risks behind this order: [`docs/REVIEW.md`](docs/REVIEW.md).
