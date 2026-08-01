@@ -48,6 +48,8 @@ def create_project(body: schemas.ProjectCreate, db: Session = Depends(get_db)):
         database=body.stack.database,
         auth=body.stack.auth,
         docker=body.stack.docker,
+        seed_data=body.stack.seedData,
+        seed_rows=body.stack.seedRows,
         path=body.path or f"~/Projects/{slug}",
     )
     db.add(p)

@@ -48,19 +48,24 @@ export function Button({ variant = 'primary', size = 'md', className, children, 
   return <button className={clsx(base, sizes[size], variants[variant], className)} {...rest}>{children}</button>;
 }
 
-export function Input({ className, ...rest }: React.InputHTMLAttributes<HTMLInputElement>) {
-  return (
-    <input
-      className={clsx(
-        'h-10 w-full rounded-lg border border-line bg-well px-3 text-sm text-txt placeholder:text-muted/50',
-        'outline-none transition-all duration-200 hover:border-line',
-        'focus:border-primary focus:bg-well focus:ring-4 focus:ring-primary/15',
-        className,
-      )}
-      {...rest}
-    />
-  );
-}
+// forwardRef so callers can focus the field — dialogs need to move focus to
+// their first input when they open, for keyboard and screen-reader users.
+export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
+  function Input({ className, ...rest }, ref) {
+    return (
+      <input
+        ref={ref}
+        className={clsx(
+          'h-10 w-full rounded-lg border border-line bg-well px-3 text-sm text-txt placeholder:text-muted/50',
+          'outline-none transition-all duration-200 hover:border-line',
+          'focus:border-primary focus:bg-well focus:ring-4 focus:ring-primary/15',
+          className,
+        )}
+        {...rest}
+      />
+    );
+  },
+);
 
 export function Select({ className, children, ...rest }: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (

@@ -19,4 +19,19 @@ contextBridge.exposeInMainWorld('skaffo', {
   engine: {
     port: () => ipcRenderer.invoke('engine:port'),
   },
+  // GitHub publishing. Note what is NOT here: there is no `getToken`. The
+  // renderer can save a token and start a publish, but can never read one
+  // back, so a compromised UI cannot exfiltrate it.
+  github: {
+    status: () => ipcRenderer.invoke('gh:status'),
+    saveToken: (token) => ipcRenderer.invoke('gh:save-token', token),
+    useSessionToken: (token) => ipcRenderer.invoke('gh:use-session-token', token),
+    forgetToken: () => ipcRenderer.invoke('gh:forget-token'),
+    publish: (options) => ipcRenderer.invoke('gh:publish', options),
+    onProgress: (callback) => {
+      const handler = (_e, step) => callback(step);
+      ipcRenderer.on('gh:progress', handler);
+      return () => ipcRenderer.removeListener('gh:progress', handler);
+    },
+  },
 });

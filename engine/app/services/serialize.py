@@ -78,6 +78,8 @@ def project_out(p: models.Project) -> dict:
             "database": p.database,
             "auth": p.auth,
             "docker": p.docker,
+            "seedData": bool(p.seed_data),
+            "seedRows": int(p.seed_rows or 12),
         },
         "schema": {
             "tables": [table_out(t) for t in p.tables],

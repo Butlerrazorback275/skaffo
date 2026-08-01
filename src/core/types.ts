@@ -106,6 +106,10 @@ export interface ProjectStack {
   database: DatabaseId;
   auth: AuthId;
   docker: boolean;
+  /** Emit `backend/app/seed.py` with believable sample rows. */
+  seedData?: boolean;
+  /** Rows generated per table when `seedData` is on. */
+  seedRows?: number;
 }
 
 export interface Project {

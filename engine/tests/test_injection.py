@@ -34,6 +34,8 @@ from pathlib import Path
 
 import pytest
 
+from conftest import BASH, requires_bash
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.generator.base import make_env  # noqa: E402
@@ -68,6 +70,7 @@ RENDER_CTX = dict(
 
 
 # ── the reported exploit ─────────────────────────────────
+@requires_bash
 def test_reported_exploit_does_not_execute(tmp_path):
     """The exact payload from the report must not run a command."""
     marker = tmp_path / "PWNED"
@@ -80,10 +83,11 @@ def test_reported_exploit_does_not_execute(tmp_path):
     script = tmp_path / "banner.sh"
     script.write_text("#!/usr/bin/env bash\n" + banner + "\n")
 
-    subprocess.run(["bash", str(script)], capture_output=True, text=True, timeout=20)
+    subprocess.run([BASH, str(script)], capture_output=True, text=True, timeout=20)
     assert not marker.exists(), "command substitution executed from the project name"
 
 
+@requires_bash
 def test_reported_exploit_still_shows_the_name(tmp_path):
     """Escaping must not silently swallow the banner."""
     sh = {f.path: f.content for f in run_scripts("My Shop$(id)")}["run.sh"]
@@ -93,7 +97,7 @@ def test_reported_exploit_still_shows_the_name(tmp_path):
     script = tmp_path / "banner.sh"
     script.write_text("#!/usr/bin/env bash\n" + banner + "\n")
     out = subprocess.run(
-        ["bash", str(script)], capture_output=True, text=True, timeout=20
+        [BASH, str(script)], capture_output=True, text=True, timeout=20
     ).stdout
     # printed literally, not evaluated
     assert "My Shop$(id)" in out
@@ -114,6 +118,7 @@ SHELL_PAYLOADS = [
 
 
 @pytest.mark.parametrize("template", SHELL_PAYLOADS)
+@requires_bash
 def test_run_sh_never_executes_the_name(template, tmp_path):
     marker = tmp_path / "PWNED"
     sh = {f.path: f.content for f in run_scripts(template.format(m=marker))}["run.sh"]
@@ -123,17 +128,18 @@ def test_run_sh_never_executes_the_name(template, tmp_path):
     )
     script = tmp_path / "banner.sh"
     script.write_text("#!/usr/bin/env bash\n" + banner + "\n")
-    subprocess.run(["bash", str(script)], capture_output=True, text=True, timeout=20)
+    subprocess.run([BASH, str(script)], capture_output=True, text=True, timeout=20)
 
     assert not marker.exists()
 
 
+@requires_bash
 def test_run_sh_is_syntactically_valid_bash():
     """A hostile name must not break the script for everyone else."""
     for name in ("My Shop", "it's", 'a"b', "Shop$(id)", "کافه", "100% & More"):
         sh = {f.path: f.content for f in run_scripts(name)}["run.sh"]
         r = subprocess.run(
-            ["bash", "-n"], input=sh, capture_output=True, text=True, timeout=20
+            [BASH, "-n"], input=sh, capture_output=True, text=True, timeout=20
         )
         assert r.returncode == 0, f"{name!r} produced invalid bash: {r.stderr}"
 
@@ -324,6 +330,7 @@ def test_flatten_preserves_normal_unicode():
 
 
 # ── the escapers are total, not blocklists ───────────────
+@requires_bash
 def test_sh_str_is_inert_for_every_ascii_character(tmp_path):
     """Fuzz every ASCII byte through a real bash, not a character check."""
     marker = tmp_path / "PWNED"
@@ -333,7 +340,7 @@ def test_sh_str_is_inert_for_every_ascii_character(tmp_path):
         script = tmp_path / "f.sh"
         script.write_text(f"#!/usr/bin/env bash\nprintf '%s' {sh_str(name)}\n")
         r = subprocess.run(
-            ["bash", str(script)], capture_output=True, text=True, timeout=20
+            [BASH, str(script)], capture_output=True, text=True, timeout=20
         )
         assert r.returncode == 0, f"char {code} ({ch!r}) broke the script"
         assert not marker.exists(), f"char {code} ({ch!r}) allowed execution"

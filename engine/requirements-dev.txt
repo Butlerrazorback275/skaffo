@@ -1,1 +1,14 @@
-openapi-spec-validator==0.7.1
+# Test-only dependencies.
+#
+# These are deliberately NOT in requirements.txt: the engine ships to users
+# who only run the app, and there is no reason to make them download a test
+# framework. Install these only if you want to run `pytest`.
+#
+#   Windows      .venv\Scripts\pip install -r requirements-dev.txt
+#   macOS/Linux  .venv/bin/pip install -r requirements-dev.txt
+#
+-r requirements.txt
+
+pytest==9.1.1
+httpx==0.28.1                   # required by fastapi.testclient
+openapi-spec-validator==0.9.0   # validates the generated OpenAPI 3.1 spec

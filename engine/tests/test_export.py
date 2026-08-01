@@ -7,6 +7,8 @@ from pathlib import Path
 
 import pytest
 
+from conftest import BASH, requires_bash
+
 from app.generator.base import GeneratedFile, UnsafeIdentifier
 from app.generator.merge import Action, plan_file
 from app.services.export import (
@@ -148,12 +150,13 @@ def test_run_script_strips_shell_metacharacters():
     assert "^" not in content.split("REM")[0] or True  # header only
 
 
+@requires_bash
 def test_run_sh_is_valid_bash(tmp_path):
     import subprocess
 
     script = tmp_path / "run.sh"
     script.write_text(next(s for s in run_scripts("Demo") if s.path == "run.sh").content)
-    result = subprocess.run(["bash", "-n", str(script)], capture_output=True)
+    result = subprocess.run([BASH, "-n", str(script)], capture_output=True)
     assert result.returncode == 0, result.stderr.decode()
 
 

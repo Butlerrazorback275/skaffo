@@ -8,6 +8,7 @@ from .base import GeneratedFile, GenContext, Generator
 from .fastapi_gen import FastAPIGenerator
 from .project_gen import ProjectFilesGenerator
 from .react_gen import ReactGenerator
+from .seed_gen import SeedGenerator
 
 REGISTRY: dict[str, Generator] = {}
 
@@ -19,6 +20,7 @@ def register(gen: Generator) -> None:
 register(FastAPIGenerator())
 register(ReactGenerator())
 register(ProjectFilesGenerator())
+register(SeedGenerator())
 
 
 def generators_for(ctx: GenContext) -> list[Generator]:
@@ -30,6 +32,8 @@ def generators_for(ctx: GenContext) -> list[Generator]:
     if stack.get("frontend") == "react":
         chosen.append(REGISTRY["gen.react"])
     chosen.append(REGISTRY["gen.project"])
+    if ctx.seed_enabled:
+        chosen.append(REGISTRY["gen.seed"])
     return chosen
 
 

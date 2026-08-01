@@ -42,6 +42,35 @@ Other scripts:
 | `npm run build` | Type-check + production bundle into `dist/` |
 | `npm run electron` | Launch Electron against the built `dist/` |
 
+### Running the tests
+
+The engine's runtime dependencies are kept separate from its test
+dependencies, so users who only run the app do not download a test framework:
+
+```bash
+cd engine
+.venv\Scripts\pip install -r requirements-dev.txt   # Windows
+.venv/bin/pip install -r requirements-dev.txt        # macOS / Linux
+
+.venv\Scripts\python -m pytest tests\ -q            # Windows
+.venv/bin/python -m pytest tests/ -q                 # macOS / Linux
+```
+
+```bash
+node scripts/test-github.cjs    # GitHub publishing, against a fake API
+```
+
+> If you see `The system cannot find the path specified`, the virtualenv does
+> not exist yet — run `setup-engine.bat` (or `./setup-engine.sh`) first.
+> `.venv/` is intentionally not committed.
+
+**On Windows:** a handful of tests prove that a hostile project name cannot
+execute a command, by running the generated `run.sh` through a real shell.
+Windows ships a `bash.exe` that is only a WSL launcher stub, so the suite
+probes for a genuine shell — including the one bundled with Git for Windows —
+and reports which it found in the pytest header. If none is usable those
+tests are skipped with the reason printed, rather than failing misleadingly.
+
 ---
 
 ## ✅ What works right now
@@ -59,13 +88,15 @@ Everything below is implemented, tested and shipping — **not planned, not stub
 | **OpenAPI 3.1** | Live spec preview, validated against the official `openapi-spec-validator` |
 | **Project Generator** | Real FastAPI + React project on disk — models, schemas, routers, Alembic migrations, tests, `run.bat` / `run.sh` |
 | **Re-generate / Sync** | Protected regions (`skaffo:keep`) survive regeneration; conflicts are reported, never silently overwritten |
+| **Sample data** | A `seed.py` with believable rows — `email` looks like an email, `price` looks like money, foreign keys point at rows that exist |
+| **Publish to GitHub** | Create a repository and push, with the token held by your OS keychain — never by Skaffo |
 | **Export** | Write to folder or real ZIP (deflate), **dry run**, per-file diffs, export report, Open Folder |
 | **Themes** | Dark · Light · Midnight · Nord, all via CSS variables |
 | **Languages** | 8 locales (en · fa · ar · es · de · fr · tr · zh) with real RTL layout |
 | **Accessibility** | Reduce-motion toggle, keyboard-only focus rings |
 | **Persistence** | FastAPI sidecar + SQLite, auto-spawned by Electron — nothing is in-memory |
 
-**Quality:** 207 passing Python tests · TypeScript clean (`tsc --noEmit`) ·
+**Quality:** 286 passing Python tests · TypeScript clean (`tsc --noEmit`) ·
 zero console errors in a headless Electron run · 65 KB initial JS bundle (20 KB gzipped).
 
 ---
@@ -106,7 +137,7 @@ engine/                   FastAPI + SQLAlchemy + SQLite
 ├─ app/routers/           projects · schema · schema_tools · api_design · generate
 ├─ app/services/          validate · ddl · openapi_spec · export · serialize
 ├─ app/generator/         pure generators + 50 Jinja templates
-└─ tests/                 207 tests
+└─ tests/                 286 tests
 ```
 
 **The contract every generator must satisfy:**
@@ -139,8 +170,12 @@ is free text.
   language (shell, batch, Python, HTML, JSX, Markdown) rather than by a
   character blocklist, because a single "sanitised" string cannot be safe in
   five grammars at once — [`docs/SECURITY-FIX-002.md`](docs/SECURITY-FIX-002.md)
+- **Your GitHub token** is stored by the OS keychain (DPAPI / Keychain /
+  libsecret), never in Skaffo's database, never in `.git/config`, never in a
+  process argument, and never readable by the UI layer —
+  [`docs/SEED-AND-GITHUB.md`](docs/SEED-AND-GITHUB.md)
 
-111 of the 207 tests are security regression tests, and they assert on
+132 of the 286 tests are security regression tests, and they assert on
 behaviour: shell payloads are executed in a real `bash`, generated Python is
 parsed with `ast`. Both issues were reported by a user reading the source.
 
@@ -166,6 +201,8 @@ parsed with `ast`. Both issues were reported by a user reading the source.
 | **Persian** — the whole layout mirrors | **RTL canvas** — the diagram stays LTR |
 | ![Templates](docs/screenshots/04-templates.png) | ![Support](docs/screenshots/17-support.png) |
 | **Templates** | **Support** — optional, nothing is gated |
+| ![Sample data](docs/screenshots/18-wizard-seed.png) | ![Publish to GitHub](docs/screenshots/20-publish-dialog.png) |
+| **Sample data** — on by default | **Publish** — token stays in the OS keychain |
 
 ---
 
@@ -179,7 +216,8 @@ parsed with `ast`. Both issues were reported by a user reading the source.
 - [x] **Phase 6** — ZIP · dry run · diffs · run scripts
 - [x] **v0.7** — 4 themes · 8 languages · RTL · code-split bundle
 - [x] **v0.9** — Renamed to Skaffo · everything free · Support page
-- [x] **v0.9.1** — Injection hardening (SECURITY-002 / 003) ← **you are here**
+- [x] **v0.9.1** — Injection hardening (SECURITY-002 / 003)
+- [x] **v0.10** — Sample data · publish to GitHub ← **you are here**
 - [ ] **v1.0** — Windows installer · app icon · onboarding · auto-update
 
 Decisions and risks behind this order: [`docs/REVIEW.md`](docs/REVIEW.md).

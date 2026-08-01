@@ -164,6 +164,8 @@ class Stack(Base):
     database: str = "sqlite"
     auth: str = "none"
     docker: bool = True
+    seedData: bool = True
+    seedRows: int = 12
 
 
 class ProjectCreate(Base):

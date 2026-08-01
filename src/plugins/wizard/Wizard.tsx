@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '@core/store';
 import type { TemplateId, BackendId, FrontendId, DatabaseId, AuthId } from '@core/types';
-import { Button, Input, scaleIn } from '@ui/primitives';
+import { Button, Input, Toggle, scaleIn } from '@ui/primitives';
 
 const STEPS = [
   { n: 1, label: 'Name',     icon: FileCode },
@@ -102,6 +102,7 @@ export default function Wizard() {
   const [database] = useState<DatabaseId>(defaults.defaultDatabase);
   const [auth, setAuth] = useState<AuthId>('jwt');
   const [docker, setDocker] = useState(true);
+  const [seedData, setSeedData] = useState(true);
   const [generating, setGenerating] = useState(false);
 
   const canNext = step === 1 ? name.trim().length > 1 : true;
@@ -111,7 +112,8 @@ export default function Wizard() {
   const generate = async () => {
     setGenerating(true);
     await new Promise((r) => setTimeout(r, 1400));
-    createProject({ name: name.trim(), description, template, stack: { backend, frontend, database, auth, docker } });
+    createProject({ name: name.trim(), description, template,
+      stack: { backend, frontend, database, auth, docker, seedData, seedRows: 12 } });
     useStore.getState().go('dashboard');
   };
 
@@ -261,21 +263,37 @@ export default function Wizard() {
                 )}
 
                 {step === 7 && (
-                  <div className="grid grid-cols-2 gap-3">
-                    <Pick active={docker} onClick={() => setDocker(true)}>
-                      <Container size={18} className="mt-0.5 text-indigo-300" />
-                      <span>
-                        <span className="block text-[14px] font-medium text-txt">Yes</span>
-                        <span className="block text-[12px] text-muted">Dockerfile + compose + nginx</span>
-                      </span>
-                    </Pick>
-                    <Pick active={!docker} onClick={() => setDocker(false)}>
-                      <X size={18} className="mt-0.5 text-muted" />
-                      <span>
-                        <span className="block text-[14px] font-medium text-txt">No</span>
-                        <span className="block text-[12px] text-muted">Run locally only</span>
-                      </span>
-                    </Pick>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <Pick active={docker} onClick={() => setDocker(true)}>
+                        <Container size={18} className="mt-0.5 text-indigo-300" />
+                        <span>
+                          <span className="block text-[14px] font-medium text-txt">Yes</span>
+                          <span className="block text-[12px] text-muted">Dockerfile + compose + nginx</span>
+                        </span>
+                      </Pick>
+                      <Pick active={!docker} onClick={() => setDocker(false)}>
+                        <X size={18} className="mt-0.5 text-muted" />
+                        <span>
+                          <span className="block text-[14px] font-medium text-txt">No</span>
+                          <span className="block text-[12px] text-muted">Run locally only</span>
+                        </span>
+                      </Pick>
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-xl border border-line bg-raise/50 px-4 py-3">
+                      <div className="flex items-start gap-2.5">
+                        <Database size={17} className="mt-0.5 text-emerald-300" />
+                        <div>
+                          <p className="text-[14px] font-medium text-txt">Sample data</p>
+                          <p className="text-[12px] text-muted">
+                            Write a <code className="font-mono text-[11.5px]">seed.py</code> with
+                            realistic rows, so the app has content the first time you open it
+                          </p>
+                        </div>
+                      </div>
+                      <Toggle on={seedData} onChange={setSeedData} />
+                    </div>
                   </div>
                 )}
 
@@ -299,6 +317,7 @@ export default function Wizard() {
                           ['Database', 'SQLite'],
                           ['Authentication', AUTHS.find((a) => a.id === auth)?.label],
                           ['Docker', docker ? 'Yes' : 'No'],
+                          ['Sample data', seedData ? '12 rows per table' : 'No'],
                         ].map(([k, v]) => (
                           <div key={k as string} className="flex justify-between">
                             <span className="text-muted">{k}</span>

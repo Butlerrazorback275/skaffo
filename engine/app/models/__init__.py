@@ -33,6 +33,8 @@ class Project(Base):
     database: Mapped[str] = mapped_column(String(24), default="sqlite")
     auth: Mapped[str] = mapped_column(String(16), default="none")
     docker: Mapped[bool] = mapped_column(Boolean, default=True)
+    seed_data: Mapped[bool] = mapped_column(Boolean, default=True)
+    seed_rows: Mapped[int] = mapped_column(Integer, default=12)
 
     path: Mapped[str] = mapped_column(String(512), default="")
     pinned: Mapped[bool] = mapped_column(Boolean, default=False)

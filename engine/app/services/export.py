@@ -197,6 +197,19 @@ if not exist "frontend\node_modules" (
   echo [3/4] node_modules already present.
 )
 
+REM ---------- sample data ----------
+REM Only if the generator emitted seed.py, and only once. The script is
+REM idempotent itself, but the marker avoids a pointless import on every run.
+if exist "backend\app\seed.py" (
+  if not exist "backend\.seeded" (
+    echo [*] Inserting sample data...
+    pushd backend
+    .venv\Scripts\python -m app.seed
+    popd
+    if not errorlevel 1 echo. > "backend\.seeded"
+  )
+)
+
 echo [4/4] Starting servers...
 echo.
 echo   Backend  http://127.0.0.1:8000/docs
@@ -237,6 +250,13 @@ if [ ! -d frontend/node_modules ]; then
   (cd frontend && npm install)
 else
   echo "[3/4] node_modules already present."
+fi
+
+# ---------- sample data ----------
+# Only if the generator emitted seed.py, and only once.
+if [ -f backend/app/seed.py ] && [ ! -f backend/.seeded ]; then
+  echo "[*] Inserting sample data..."
+  (cd backend && .venv/bin/python -m app.seed) && touch backend/.seeded
 fi
 
 echo "[4/4] Starting servers..."

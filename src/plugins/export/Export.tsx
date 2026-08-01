@@ -5,11 +5,12 @@ import {
   FolderOpen, FileArchive, GitBranch, Container, Rocket, Check, Lock,
   Folder, FileCode, ChevronRight, ChevronDown, Package, AlertTriangle,
   Sparkles, ShieldCheck, RefreshCw, Eye, X, GitCompare, ExternalLink,
-  PlayCircle, HardDriveDownload,
+  PlayCircle, HardDriveDownload, Github,
 } from 'lucide-react';
 import { useStore, useActiveProject } from '@core/store';
 import { api, type GenPreview, type GenAction, type ExportReport } from '@core/api';
 import { Card, Button, Badge, Toggle, SectionTitle, timeAgo } from '@ui/primitives';
+import PublishDialog from './PublishDialog';
 import DiffViewer from './DiffViewer';
 
 type FormatId = 'folder' | 'zip' | 'git' | 'docker' | 'production';
@@ -83,6 +84,7 @@ export default function ExportPage() {
   const refresh = useStore((s) => s.refresh);
 
   const [format, setFormat] = useState<FormatId>('folder');
+  const [publishOpen, setPublishOpen] = useState(false);
   const [preview, setPreview] = useState<GenPreview | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<'' | 'generate' | 'zip' | 'dry'>('');
@@ -167,7 +169,7 @@ export default function ExportPage() {
     { id: 'folder',     label: 'Folder',             desc: 'Write files straight to disk',        icon: FolderOpen },
     { id: 'zip',        label: 'ZIP',                desc: 'One compressed archive',              icon: FileArchive },
     { id: 'docker',     label: 'Docker Ready',       desc: project.stack.docker ? 'Dockerfile, compose and nginx included' : 'Enable Docker in the wizard', icon: Container },
-    { id: 'git',        label: 'Git Repository',     desc: 'Not built yet — on the roadmap',      icon: GitBranch, soon: true },
+    { id: 'git',        label: 'GitHub Repository',  desc: 'Create a repo and push this project', icon: Github },
     { id: 'production', label: 'Deployment Starter', desc: 'Not built yet — on the roadmap',      icon: Rocket, soon: true },
   ];
 
@@ -224,7 +226,32 @@ export default function ExportPage() {
             })}
           </div>
 
-          <div className="mt-5">
+          {/* GitHub is not a file format — it publishes what is already on
+              disk, so it gets its own panel instead of the generate flow. */}
+          {format === 'git' && (
+            <div className="mt-5">
+              <SectionTitle>Publish</SectionTitle>
+              <Card className="p-4">
+                <p className="text-[13px] text-muted">
+                  Creates a repository on your GitHub account and pushes this
+                  project to it. Your token is stored by your operating system,
+                  never in Skaffo's database.
+                </p>
+                <div className="mt-3 flex items-center gap-2">
+                  <Button onClick={() => setPublishOpen(true)} disabled={!preview}>
+                    <Github size={15} /> Create &amp; push
+                  </Button>
+                  {!preview && (
+                    <span className="text-[12.5px] text-muted">
+                      Generate the project first.
+                    </span>
+                  )}
+                </div>
+              </Card>
+            </div>
+          )}
+
+          <div className={clsx('mt-5', format === 'git' && 'hidden')}>
             <SectionTitle right={preview && <Badge tone="primary">{preview.fileCount} files</Badge>}>
               {format === 'zip' ? 'Create archive' : 'Generate'}
             </SectionTitle>
@@ -448,6 +475,14 @@ export default function ExportPage() {
 
         {diffPath && <DiffViewer path={diffPath} onClose={() => setDiffPath(null)} />}
       </AnimatePresence>
+
+      <PublishDialog
+        open={publishOpen}
+        onClose={() => setPublishOpen(false)}
+        projectName={project.name}
+        description={project.description || undefined}
+        targetDir={preview?.target || ''}
+      />
     </div>
   );
 }

@@ -138,6 +138,18 @@ class GenContext:
     def docker(self) -> bool:
         return bool(self.stack.get("docker"))
 
+    @property
+    def seed_enabled(self) -> bool:
+        """Whether to emit `backend/app/seed.py` with sample rows."""
+        return bool(self.stack.get("seedData"))
+
+    @property
+    def seed_rows(self) -> int:
+        try:
+            return int(self.stack.get("seedRows") or 12)
+        except (TypeError, ValueError):
+            return 12
+
 
 class Generator(Protocol):
     id: str

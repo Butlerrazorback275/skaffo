@@ -26,4 +26,10 @@ echo.
 echo ============================================
 echo  Engine ready. Now run:  npm run dev
 echo ============================================
+echo.
+echo  To run the test suite as well:
+echo    cd engine
+echo    .venv\Scripts\pip install -r requirements-dev.txt
+echo    .venv\Scripts\python -m pytest tests\ -q
+echo.
 pause

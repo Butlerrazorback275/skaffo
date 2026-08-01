@@ -14,6 +14,8 @@ from .database import engine
 ADDITIVE: dict[str, list[tuple[str, str]]] = {
     "projects": [
         ("is_sample", "BOOLEAN DEFAULT 0"),
+        ("seed_data", "BOOLEAN DEFAULT 1"),
+        ("seed_rows", "INTEGER DEFAULT 12"),
     ],
     "endpoints": [
         ("description", "TEXT DEFAULT ''"),
